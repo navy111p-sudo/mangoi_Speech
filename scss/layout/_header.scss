@@ -1,0 +1,50 @@
+/* ===========================
+   Header - 헤더 레이아웃 (업데이트: 그라디언트)
+   =========================== */
+
+.header {
+  background: $gradient-primary; // 그라디언트 적용
+  color: white;
+  padding: $spacing-md $spacing-xl;
+  box-shadow: $shadow-lg;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px); // 블러 효과
+
+  &__inner {
+    max-width: 900px;
+    margin: 0 auto;
+    @include flex-between;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-family: $font-family-en;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // 텍스트 그림자
+
+    span {
+      color: #ffd60a; // 노란색 포인트
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  &__badge {
+    background: rgba(255, 255, 255, 0.25);
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-full;
+    font-size: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+}

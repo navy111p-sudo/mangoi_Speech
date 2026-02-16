@@ -1,0 +1,15 @@
+/* ===========================
+   Footer - 푸터 레이아웃
+   =========================== */
+
+.footer {
+  text-align: center;
+  padding: $spacing-xl;
+  color: $color-text-muted;
+  font-size: 0.75rem;
+  margin-top: $spacing-2xl;
+
+  &__text {
+    opacity: 0.7;
+  }
+}

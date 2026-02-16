@@ -1,0 +1,32 @@
+/* ===========================
+   Form - 입력 폼 컴포넌트
+   =========================== */
+
+.form {
+  &__group {
+    margin-bottom: $spacing-md;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $color-text;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__input {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    border: 2px solid rgba($color-text-muted, 0.3);
+    border-radius: $radius-md;
+    font-size: 1rem;
+    @include transition(border-color, box-shadow);
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+    }
+  }
+}

@@ -1,0 +1,109 @@
+/* ===========================
+   Card - 카드 컴포넌트 (업데이트: 색상 테마)
+   =========================== */
+
+.card {
+  @include card-base;
+  @include transition(box-shadow, transform, border-color);
+  background: white;
+  border: 1px solid rgba($color-primary, 0.1);
+
+  &:hover {
+    box-shadow: $shadow-xl;
+    border-color: rgba($color-primary, 0.3);
+  }
+
+  // 피드백 카드 (Green Theme)
+  &--feedback {
+    border-left: none; // 기존 왼쪽 보더 제거
+    border-top: 6px solid $color-success; // 상단 보더로 변경
+    background: linear-gradient(
+      to bottom,
+      rgba($color-success, 0.02),
+      white 15%
+    );
+  }
+
+  // 리포트 카드 (Purple Theme)
+  &--report {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(white, white) padding-box,
+      $gradient-primary border-box; // 보더 그라디언트
+    box-shadow: 0 20px 50px -10px rgba(139, 92, 246, 0.2); // 은은한 보라빛 그림자
+  }
+}
+
+// 점수 카드 (Neo-morphism 느낌)
+.score-card {
+  @include flex-column;
+  align-items: center;
+  padding: $spacing-lg;
+  border-radius: $radius-xl;
+  background: white;
+  box-shadow: $shadow-md;
+  text-align: center;
+  border: 1px solid $color-bg-subtle;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $shadow-lg;
+  }
+
+  &__value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: $gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: $font-family-en;
+    line-height: 1.2;
+  }
+
+  &__label {
+    font-size: 0.85rem;
+    color: $color-text-light;
+    margin-top: $spacing-xs;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// 등급 배지 (더 선명하게)
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  padding: 0.5rem 1.25rem;
+  border-radius: $radius-full;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  box-shadow: $shadow-sm;
+
+  &--excellent {
+    background: linear-gradient(135deg, #f59e0b, #d97706); // Amber
+    color: white;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+  }
+
+  &--good {
+    background: linear-gradient(135deg, #3b82f6, #2563eb); // Blue
+    color: white;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+
+  &--normal {
+    background: linear-gradient(135deg, #10b981, #059669); // Emerald
+    color: white;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  }
+
+  &--poor {
+    background: linear-gradient(135deg, #94a3b8, #64748b); // Slate
+    color: white;
+  }
+}

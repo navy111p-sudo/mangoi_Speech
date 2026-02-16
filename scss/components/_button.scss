@@ -1,0 +1,171 @@
+/* ===========================
+   Button - 버튼 컴포넌트 (업데이트: 입체감)
+   =========================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: 0.75rem 1.5rem; // 패딩 증가
+  border-radius: $radius-lg; // 더 둥글게
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: $font-family-en; // 영문 폰트 적용
+  @include transition(all);
+  position: relative;
+  overflow: hidden;
+
+  // 호버 효과
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  // 매직 이펙트 (광택)
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0)
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  // 녹음 버튼 (가장 중요)
+  &--record {
+    width: 90px;
+    height: 90px;
+    padding: 0;
+    border-radius: 40%; // 완전 원형보다는 약간 사각형 느낌 주는 스쿼클
+    background: $color-record;
+    background: linear-gradient(
+      135deg,
+      $color-record,
+      darken($color-record, 5%)
+    );
+    color: white;
+    font-size: 2rem;
+    box-shadow:
+      0 10px 25px $color-record-shadow,
+      inset 0 2px 5px rgba(255, 255, 255, 0.3);
+    border: 4px solid white; // 흰색 테두리 추가
+
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        lighten($color-record, 5%),
+        $color-record
+      );
+      transform: scale(1.1) rotate(5deg); // 회전 효과 추가
+      border-radius: 45%; // 형태 변화
+    }
+
+    // 녹음 중 애니메이션
+    &.is-recording {
+      border-radius: 50%; // 원형으로 변경
+      background: $color-error;
+      animation: pulse-record 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  // 기본 버튼 (Gradient)
+  &--primary {
+    background: $gradient-primary;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+
+    &:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    }
+  }
+
+  // 보조 버튼
+  &--secondary {
+    background: white;
+    color: $color-primary;
+    border: 2px solid rgba($color-primary, 0.2);
+
+    &:hover {
+      border-color: $color-primary;
+      background: rgba($color-primary, 0.05);
+      color: $color-primary-dark;
+    }
+  }
+
+  // 듣기 버튼 (Pill shape)
+  &--listen {
+    background: $color-info;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb); // Sky -> Blue
+    color: white;
+    border-radius: $radius-full;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+
+    &:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 6px 15px rgba(14, 165, 233, 0.4);
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  // 다시 시작 버튼
+  &--restart {
+    background: $color-warning;
+    background: linear-gradient(
+      135deg,
+      $color-warning,
+      darken($color-warning, 10%)
+    );
+    color: white;
+  }
+
+  &:disabled {
+    background: $color-text-muted;
+    box-shadow: none;
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+// 녹음 중 맥박 애니메이션 (더 역동적으로)
+@keyframes pulse-record {
+  0% {
+    box-shadow: 0 0 0 0 rgba($color-error, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  70% {
+    box-shadow: 0 0 0 25px rgba($color-error, 0);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba($color-error, 0);
+  }
+}

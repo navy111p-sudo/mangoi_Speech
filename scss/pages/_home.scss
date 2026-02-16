@@ -1,0 +1,495 @@
+/* ===========================
+   Home - 메인 페이지 스타일 (업데이트: 다채로운 섹션)
+   =========================== */
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: $spacing-xl $spacing-lg;
+  @include flex-column;
+  gap: $spacing-2xl; // 간격 증가
+  min-height: calc(100vh - 80px);
+  position: relative;
+
+  // 배경 장식 (Blob)
+  &::before {
+    content: "";
+    position: fixed;
+    top: 100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(
+      circle,
+      rgba(139, 92, 246, 0.15) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    border-radius: 50%;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+    position: fixed;
+    bottom: 50px;
+    right: -50px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(
+      circle,
+      rgba(217, 70, 239, 0.15) 0%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    border-radius: 50%;
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+
+// 연습 섹션 (Sky Blue Theme)
+.practice {
+  @include card-base;
+  text-align: center;
+  background: white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  overflow: hidden;
+  position: relative;
+
+  // 상단 장식 바
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(to right, $color-info, $color-primary);
+  }
+
+  &__sentence {
+    font-family: $font-family-en;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $color-text;
+    line-height: 1.6;
+    padding: $spacing-xl;
+    background: $color-bg;
+    border-radius: $radius-lg;
+    margin-bottom: $spacing-xl;
+    border: 2px dashed rgba($color-primary, 0.3);
+    position: relative;
+
+    // 따옴표 장식
+    &::before {
+      content: '"';
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      font-size: 4rem;
+      color: rgba($color-primary, 0.1);
+      font-family: serif;
+    }
+  }
+
+  &__instruction {
+    font-size: 1rem;
+    color: $color-text-light;
+    margin-bottom: $spacing-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    // 아이콘 느낌의 텍스트
+    &::before {
+      content: "🗣️";
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// 녹음 섹션
+.recorder {
+  @include flex-column;
+  align-items: center;
+  gap: $spacing-lg;
+  padding: $spacing-md 0;
+
+  &__status {
+    font-size: 1rem;
+    color: $color-text;
+    font-weight: 700;
+    background: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: $radius-full;
+    box-shadow: $shadow-sm;
+  }
+
+  &__attempts {
+    @include flex-center;
+    gap: $spacing-md;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__dot {
+    width: 16px;
+    height: 16px;
+    border-radius: $radius-full;
+    background: $color-bg-subtle;
+    border: 2px solid $color-text-muted;
+    @include transition(all);
+
+    &.is-active {
+      background: white;
+      border-color: $color-secondary; // Fuchsia
+      box-shadow: 0 0 0 4px rgba($color-secondary, 0.2);
+      transform: scale(1.2);
+    }
+
+    &.is-done {
+      background: $color-secondary;
+      border-color: $color-secondary;
+    }
+  }
+
+  &__text {
+    margin-top: $spacing-lg;
+    padding: $spacing-lg $spacing-xl;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    border-radius: $radius-xl;
+    font-family: $font-family-en;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: $color-text;
+    min-height: 80px;
+    width: 100%;
+    text-align: center;
+    @include transition(opacity);
+    border: 1px solid rgba($color-primary, 0.1);
+    box-shadow: $shadow-md;
+
+    &--empty {
+      color: $color-text-muted;
+      font-style: italic;
+      font-weight: 400;
+    }
+  }
+}
+
+// 피드백 섹션
+.feedback {
+  @include card-base;
+  border-top: 6px solid $color-success; // 상단 보더
+  background: white;
+  display: none;
+
+  &.is-visible {
+    display: block;
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: $color-text;
+    margin-bottom: $spacing-lg;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+      content: "";
+      width: 6px;
+      height: 24px;
+      background: $color-success;
+      border-radius: 4px;
+      display: inline-block;
+    }
+  }
+
+  &__comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-xl;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__original,
+  &__corrected {
+    padding: $spacing-lg;
+    border-radius: $radius-lg;
+    font-family: $font-family-en;
+    font-size: 1rem;
+    line-height: 1.7;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__original {
+    background: #fef2f2; // Very Light Red
+    border: 1px solid #fecaca;
+    color: #991b1b;
+
+    .feedback__label {
+      color: #ef4444;
+    }
+  }
+
+  &__corrected {
+    background: #ecfdf5; // Very Light Green
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+
+    .feedback__label {
+      color: #10b981;
+    }
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: $spacing-sm;
+    opacity: 0.8;
+  }
+
+  &__errors {
+    margin-bottom: $spacing-xl;
+  }
+
+  &__error-item {
+    padding: $spacing-md $spacing-lg;
+    background: #fffbeb; // Light Amber
+    border-radius: $radius-md;
+    margin-bottom: $spacing-md;
+    font-size: 0.95rem;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+
+    &::before {
+      content: "💡";
+    }
+  }
+
+  &__listen-btn {
+    margin-top: $spacing-lg;
+    text-align: center;
+  }
+}
+
+// 리포트 카드 섹션
+.report {
+  @include card-base;
+  border: none;
+  background: white;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  display: none;
+  box-shadow: $shadow-xl;
+
+  &.is-visible {
+    display: block;
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // 상단 그라디언트 헤더
+  &__header {
+    text-align: center;
+    padding: $spacing-2xl $spacing-xl;
+    background: $gradient-primary;
+    color: white;
+    margin: -#{$spacing-xl} -#{$spacing-xl} $spacing-xl; // 부모 패딩 무시
+    position: relative;
+
+    // 패턴 오버레이
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(white 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0.1;
+    }
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: $spacing-sm;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &__grade {
+    margin-top: $spacing-lg;
+    transform: scale(1.2); // 배지 크게
+  }
+
+  &__scores {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-2xl;
+    padding: 0 $spacing-lg;
+
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__average {
+    text-align: center;
+    padding: $spacing-xl;
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-radius: $radius-xl;
+    margin: 0 $spacing-lg $spacing-2xl;
+    border: 1px solid rgba(14, 165, 233, 0.2);
+  }
+
+  &__average-value {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, $color-primary, $color-secondary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: $font-family-en;
+    line-height: 1;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__average-label {
+    font-size: 1rem;
+    color: $color-text-light;
+    font-weight: 600;
+  }
+
+  &__chart {
+    margin: $spacing-2xl 0;
+    @include flex-center;
+    position: relative;
+
+    // 차트 배경 장식
+    &::before {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(
+        circle,
+        rgba(139, 92, 246, 0.05) 0%,
+        transparent 70%
+      );
+      border-radius: 50%;
+      z-index: -1;
+    }
+  }
+
+  &__history {
+    margin-top: $spacing-2xl;
+    padding: 0 $spacing-lg;
+  }
+
+  &__history-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: $color-text;
+    margin-bottom: $spacing-md;
+    border-bottom: 2px solid $color-bg-subtle;
+    padding-bottom: $spacing-sm;
+  }
+
+  &__history-table {
+    width: 100%;
+    border-collapse: separate; // border-radius 적용을 위해
+    border-spacing: 0 $spacing-xs; // 행 간격
+    font-size: 0.9rem;
+
+    th {
+      font-weight: 700;
+      color: $color-text-muted;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      padding: $spacing-sm;
+    }
+
+    td {
+      padding: $spacing-md;
+      background: white;
+      border-top: 1px solid $color-bg-subtle;
+      border-bottom: 1px solid $color-bg-subtle;
+
+      &:first-child {
+        border-left: 1px solid $color-bg-subtle;
+        border-top-left-radius: $radius-md;
+        border-bottom-left-radius: $radius-md;
+      }
+
+      &:last-child {
+        border-right: 1px solid $color-bg-subtle;
+        border-top-right-radius: $radius-md;
+        border-bottom-right-radius: $radius-md;
+        font-weight: 700;
+        color: $color-primary;
+      }
+    }
+
+    .is-best td {
+      background: rgba(139, 92, 246, 0.05);
+      border-color: rgba(139, 92, 246, 0.2);
+    }
+  }
+
+  &__actions {
+    @include flex-center;
+    gap: $spacing-md;
+    margin-top: $spacing-2xl;
+    padding-bottom: $spacing-xl;
+  }
+}
+
+// 파형 애니메이션 (색상 변경)
+.wave {
+  @include flex-center;
+  gap: 4px; // 간격 넓힘
+  height: 40px; // 높이 키움
+  display: none;
+
+  &.is-active {
+    display: flex;
+  }
+
+  &__bar {
+    width: 5px; // 두께 키움
+    height: 100%;
+    background: linear-gradient(
+      to top,
+      $color-secondary,
+      $color-primary
+    ); // 그라디언트 막대
+    border-radius: $radius-full;
+    animation: wave-anim 1s ease-in-out infinite;
+
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.1}s;
+        height: #{50 + ($i * 10)}%; // 초기 높이 다르게
+      }
+    }
+  }
+}

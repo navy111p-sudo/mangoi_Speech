@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="영어 발음 교정 및 문법 검사 음성인식 학습 도구"
+    />
+    <title>Mangoi Speech Coach - 영어 발음 교정</title>
+
+    <!-- Google Fonts (Outfit 추가) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Pretendard -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- 헤더 -->
+    <header class="header" id="header">
+      <div class="header__inner">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <img
+            src="https://www.mangoi.co.kr/images/logo_mangoi.png"
+            alt="Mangoi Logo"
+            style="height: 50px; object-fit: contain"
+          />
+          <div>
+            <h1 class="header__title"><span>Speech</span> Coach</h1>
+            <p class="header__subtitle">
+              AI 기반 영어 발음 교정 &amp; 문법 학습 도구
+            </p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center">
+          <button
+            onclick="showDemoReport()"
+            style="
+              background: rgba(255, 255, 255, 0.2);
+              padding: 4px 10px;
+              border-radius: 20px;
+              color: white;
+              font-size: 0.75rem;
+              border: 1px solid rgba(255, 255, 255, 0.4);
+            "
+          >
+            결과 미리보기
+          </button>
+          <span class="header__badge" id="browserSupport">Chrome 권장</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main" id="main">
+      <!-- 연습 문장 섹션 -->
+      <section class="practice" id="practiceSection">
+        <p class="practice__instruction">아래 문장을 큰 소리로 읽어보세요</p>
+        <div class="practice__sentence" id="targetSentence">
+          The quick brown fox jumps over the lazy dog.
+        </div>
+
+        <!-- 문장 선택 버튼 -->
+        <div
+          style="
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <button
+            class="btn btn--secondary"
+            id="btnChangeSentence"
+            type="button"
+          >
+            다른 문장 바꾸기
+          </button>
+          <button class="btn btn--listen" id="btnListenTarget" type="button">
+            <!-- 아이콘 추가 -->
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M3 9V15H7L12 20V4L7 9H3Z" fill="currentColor" />
+              <path
+                d="M16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z"
+                fill="currentColor"
+              />
+              <path
+                d="M14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z"
+                fill="currentColor"
+              />
+            </svg>
+            원어민 발음 듣기
+          </button>
+        </div>
+      </section>
+
+      <!-- 녹음 섹션 -->
+      <section
+        class="practice"
+        id="recorderSection"
+        style="
+          background: transparent;
+          box-shadow: none;
+          padding: 0;
+          overflow: visible;
+        "
+      >
+        <div class="recorder">
+          <!-- 시도 횟수 표시 -->
+          <div class="recorder__attempts" id="attemptDots">
+            <span class="recorder__dot is-active" data-attempt="1"></span>
+            <span class="recorder__dot" data-attempt="2"></span>
+            <span class="recorder__dot" data-attempt="3"></span>
+          </div>
+
+          <p class="recorder__status" id="recorderStatus">시도 1/3 - 준비됨</p>
+
+          <!-- 녹음 버튼 -->
+          <button
+            class="btn btn--record"
+            id="btnRecord"
+            type="button"
+            aria-label="녹음 시작"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 1C10.34 1 9 2.34 9 4V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V4C15 2.34 13.66 1 12 1Z"
+                fill="currentColor"
+              />
+              <path
+                d="M17 12C17 14.76 14.76 17 12 17C9.24 17 7 14.76 7 12H5C5 15.53 7.61 18.43 11 18.92V22H13V18.92C16.39 18.43 19 15.53 19 12H17Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+
+          <!-- 파형 애니메이션 -->
+          <div class="wave" id="waveAnimation">
+            <div class="wave__bar"></div>
+            <div class="wave__bar"></div>
+            <div class="wave__bar"></div>
+            <div class="wave__bar"></div>
+            <div class="wave__bar"></div>
+          </div>
+
+          <!-- 인식된 텍스트 -->
+          <div class="recorder__text recorder__text--empty" id="recognizedText">
+            마이크 버튼을 누르고 영어로 말해보세요
+          </div>
+        </div>
+      </section>
+
+      <!-- 피드백 섹션 -->
+      <section class="feedback" id="feedbackSection">
+        <h2 class="feedback__title">분석 결과</h2>
+
+        <!-- 원본 vs 교정 비교 -->
+        <div class="feedback__comparison">
+          <div class="feedback__original">
+            <span class="feedback__label">학생의 문장 (Your Speech)</span>
+            <p id="originalText"></p>
+          </div>
+          <div class="feedback__corrected">
+            <span class="feedback__label">AI 교정 문장 (Corrected)</span>
+            <p id="correctedText"></p>
+          </div>
+        </div>
+
+        <!-- 오류 목록 -->
+        <div class="feedback__errors" id="errorList">
+          <!-- 동적으로 추가됨 -->
+        </div>
+
+        <!-- 교정된 문장 듣기 -->
+        <div class="feedback__listen-btn">
+          <button class="btn btn--listen" id="btnListenCorrected" type="button">
+            교정된 문장 듣기
+          </button>
+        </div>
+
+        <!-- 다음 시도 버튼 -->
+        <div style="text-align: center; margin-top: 2rem">
+          <button
+            class="btn btn--primary"
+            id="btnNextAttempt"
+            type="button"
+            style="display: none; padding: 1rem 2rem; font-size: 1.1rem"
+          >
+            다음 시도하기
+          </button>
+        </div>
+      </section>
+
+      <!-- 리포트 카드 섹션 -->
+      <section class="report" id="reportSection">
+        <div class="report__header">
+          <h2 class="report__title">Final Report Card</h2>
+          <p style="opacity: 0.9">Great job! Here is your result.</p>
+          <div class="report__grade" id="gradeDisplay">
+            <!-- 등급 배지 동적 추가 -->
+          </div>
+        </div>
+
+        <!-- 점수 카드 -->
+        <div class="report__scores" id="scoreCards">
+          <div class="score-card">
+            <span class="score-card__value" id="scorePronunciation">-</span>
+            <span class="score-card__label">Pronunciation</span>
+          </div>
+          <div class="score-card">
+            <span class="score-card__value" id="scoreGrammar">-</span>
+            <span class="score-card__label">Grammar</span>
+          </div>
+          <div class="score-card">
+            <span class="score-card__value" id="scoreFluency">-</span>
+            <span class="score-card__label">Fluency</span>
+          </div>
+        </div>
+
+        <!-- 평균 점수 -->
+        <div class="report__average">
+          <div class="report__average-value" id="scoreAverage">-</div>
+          <div class="report__average-label">Total Average Score</div>
+        </div>
+
+        <!-- 레이다 차트 -->
+        <div class="report__chart">
+          <canvas class="report__chart-canvas" id="radarChart"></canvas>
+        </div>
+
+        <!-- 시도 기록 테이블 -->
+        <div class="report__history">
+          <h3 class="report__history-title">History Check</h3>
+          <table class="report__history-table">
+            <thead>
+              <tr>
+                <th>Attempt</th>
+                <th>Pronunciation</th>
+                <th>Grammar</th>
+                <th>Fluency</th>
+                <th>Average</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- 동적으로 추가됨 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="report__actions">
+          <button
+            class="btn btn--restart btn--primary"
+            id="btnRestart"
+            type="button"
+          >
+            처음부터 다시 연습하기
+          </button>
+        </div>
+      </section>
+
+      <!-- 상세 피드백 모달 -->
+      <div class="modal" id="feedbackModal">
+        <div class="modal__content">
+          <div class="modal__header">
+            <h3 class="modal__title">상세 피드백 (Detailed Feedback)</h3>
+            <button class="modal__close" id="btnCloseModal" aria-label="닫기">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="modal__body">
+            <!-- 점수 요약 -->
+            <div class="modal__section-title">Score Analysis</div>
+            <div class="modal__score-bar">
+              <div class="modal__score-item">
+                <span class="modal__score-label">Pronunciation</span>
+                <span class="modal__score-value" id="modalScorePronunciation"
+                  >-</span
+                >
+              </div>
+              <div class="modal__score-item">
+                <span class="modal__score-label">Grammar</span>
+                <span class="modal__score-value" id="modalScoreGrammar">-</span>
+              </div>
+              <div class="modal__score-item">
+                <span class="modal__score-label">Fluency</span>
+                <span class="modal__score-value" id="modalScoreFluency">-</span>
+              </div>
+            </div>
+
+            <!-- 문장 비교 -->
+            <div class="modal__section-title">Speech Analysis</div>
+            <div class="modal__text-box modal__text-box--original">
+              <div
+                style="
+                  font-size: 0.8rem;
+                  font-weight: 700;
+                  color: #94a3b8;
+                  margin-bottom: 4px;
+                "
+              >
+                YOU SAID:
+              </div>
+              <p id="modalOriginalText">-</p>
+            </div>
+
+            <div class="modal__text-box modal__text-box--corrected">
+              <div
+                style="
+                  font-size: 0.8rem;
+                  font-weight: 700;
+                  color: #10b981;
+                  margin-bottom: 4px;
+                "
+              >
+                CORRECTED:
+              </div>
+              <p id="modalCorrectedText">-</p>
+            </div>
+
+            <!-- 오류 목록 -->
+            <div class="modal__section-title">Grammar &amp; Errors</div>
+            <div
+              class="feedback__errors"
+              id="modalErrorList"
+              style="margin-bottom: 0"
+            >
+              <!-- 동적으로 추가됨 -->
+            </div>
+          </div>
+          <div class="modal__footer">
+            <button
+              class="btn btn--secondary"
+              id="btnPlayCorrectedModal"
+              type="button"
+              style="font-size: 0.85rem; padding: 0.5rem 1rem"
+            >
+              교정된 문장 듣기
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Floating Mascot Video -->
+      <div class="mascot-wrap">
+        <video class="mascot-video" id="mascotVideo" playsinline>
+          <source src="assets/videos/mangoi_intro.mp4" type="video/mp4" />
+        </video>
+        <button class="mascot-sound-btn" id="mascotSoundBtn" type="button">
+          소리 켜기
+        </button>
+      </div>
+      <script>
+        (function () {
+          var mv = document.getElementById("mascotVideo");
+          var btn = document.getElementById("mascotSoundBtn");
+
+          btn.addEventListener("click", function () {
+            if (mv.paused) {
+              // 재생: 처음부터 소리와 함께
+              mv.currentTime = 0;
+              mv.muted = false;
+              mv.play();
+              btn.textContent = "소리 끄기";
+            } else {
+              // 정지
+              mv.pause();
+              mv.currentTime = 0;
+              btn.textContent = "소리 켜기";
+            }
+          });
+
+          // 재생이 끝나면 자동 정지
+          mv.addEventListener("ended", function () {
+            mv.pause();
+            mv.currentTime = 0;
+            btn.textContent = "소리 켜기";
+          });
+        })();
+      </script>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+      <p class="footer__text">
+        Mangoi Speech Coach &copy; 2026 - AI Powered Learning
+      </p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+  </body>
+</html>
