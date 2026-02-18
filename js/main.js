@@ -34,6 +34,11 @@ const SENTENCES = [
   "I think we should take a different approach to this problem.",
   "The restaurant was so crowded that we had to wait for a table.",
   "Learning a new language requires patience and dedication.",
+  "Excuse me, could you recommend a good place to eat around here?",
+  "I accidentally left my umbrella on the bus this morning.",
+  "The more you practice, the better you will become at speaking English.",
+  "Would it be possible to reschedule our meeting to next Friday?",
+  "I really enjoyed the movie we watched last night.",
 ];
 
 // 현재 상태 관리 객체
@@ -914,6 +919,12 @@ function updateAttemptDot(attemptNumber, status) {
 
 /**
  * 다른 문장으로 변경
+ *
+ * 왜 restart()를 호출하지 않나요?
+ * - restart()는 window.location.reload()로 페이지를 새로고침합니다.
+ * - 새로고침하면 JavaScript 메모리(state)가 모두 초기화되어
+ *   방금 바꾼 문장도 사라지고 첫 번째 문장으로 돌아갑니다.
+ * - 그래서 페이지 새로고침 없이 상태만 직접 초기화합니다.
  */
 function changeSentence() {
   // 현재 문장과 다른 랜덤 문장 선택
@@ -922,11 +933,25 @@ function changeSentence() {
     newSentence = SENTENCES[Math.floor(Math.random() * SENTENCES.length)];
   } while (newSentence === state.currentSentence && SENTENCES.length > 1);
 
+  // 새 문장 적용
   state.currentSentence = newSentence;
   DOM.targetSentence.textContent = newSentence;
 
-  // 새 문장이면 처음부터 다시
-  restart();
+  // 시도 상태 초기화 (페이지 새로고침 없이)
+  state.currentAttempt = 1;
+  state.attempts = [];
+  state.isRecording = false;
+
+  // UI 초기화
+  updateAttemptUI();
+  DOM.feedbackSection.classList.remove("is-visible");
+  DOM.reportSection.classList.remove("is-visible");
+  DOM.btnNextAttempt.style.display = "none";
+  DOM.recognizedText.textContent = "마이크 버튼을 누르고 영어로 말해보세요";
+  DOM.recognizedText.classList.add("recorder__text--empty");
+
+  // 연습 섹션으로 스크롤
+  DOM.targetSentence.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 /**
