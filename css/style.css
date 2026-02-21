@@ -1067,7 +1067,7 @@ a {
   border-bottom-right-radius: 1.5rem;
 }
 
-/* === Mascot Video (오른쪽 중앙 배치) === */
+/* === Mascot Video (레트로 TV 스타일) === */
 .mascot-wrap {
   position: fixed;
   top: 50%;
@@ -1077,35 +1077,128 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
 }
 
+/* TV 본체 */
+.retro-tv {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* TV 안테나 컨테이너 */
+.retro-tv__antenna {
+  position: relative;
+  width: 80px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+/* 안테나 왼쪽 봉 */
+.retro-tv__antenna-left {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  width: 3px;
+  height: 28px;
+  background: #8b7355;
+  border-radius: 2px;
+  transform: rotate(-25deg);
+  transform-origin: bottom center;
+}
+
+/* 안테나 오른쪽 봉 */
+.retro-tv__antenna-right {
+  position: absolute;
+  bottom: 0;
+  right: 10px;
+  width: 3px;
+  height: 28px;
+  background: #8b7355;
+  border-radius: 2px;
+  transform: rotate(25deg);
+  transform-origin: bottom center;
+}
+
+/* 안테나 베이스 (동그란 부분) */
+.retro-tv__antenna-base {
+  position: absolute;
+  bottom: -3px;
+  width: 12px;
+  height: 6px;
+  background: #8b7355;
+  border-radius: 50%;
+}
+
+/* TV 화면 영역 */
+.retro-tv__screen {
+  width: 260px;
+  background: #2c2015;
+  border-radius: 1.2rem;
+  padding: 10px;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 3px solid #6b4c2a;
+}
+
+/* 비디오 자체 */
 .mascot-video {
-  width: 280px;
-  border-radius: 1rem;
-  background-color: #fffdf5;
-  mix-blend-mode: multiply;
-  object-fit: cover;
+  width: 100%;
+  border-radius: 0.8rem;
+  display: block;
   pointer-events: none;
+  object-fit: cover;
 }
 
+/* TV 하단 패널 (소리 버튼) */
+.retro-tv__panel {
+  width: 260px;
+  background: linear-gradient(to bottom, #6b4c2a, #5a3e22);
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0 0 1.2rem 1.2rem;
+  border: 3px solid #6b4c2a;
+  border-top: none;
+}
+
+/* 소리 버튼 (TV 다이얼 느낌) */
 .mascot-sound-btn {
   pointer-events: auto;
   background: linear-gradient(135deg, #e6a800, #f0b800);
   color: #fff;
-  border: none;
-  padding: 0.4rem 1rem;
+  border: 2px solid #c89600;
+  padding: 0.3rem 0.9rem;
   border-radius: 9999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
 }
 
 .mascot-sound-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* TV 다리 */
+.retro-tv__legs {
+  display: flex;
+  justify-content: space-between;
+  width: 180px;
+  margin-top: -2px;
+}
+
+.retro-tv__leg {
+  width: 4px;
+  height: 14px;
+  background: #6b4c2a;
+  border-radius: 0 0 2px 2px;
 }
 
 /* 화면 너비에 따라 크기 조절 */
@@ -1113,8 +1206,15 @@ a {
   .mascot-wrap {
     right: 1vw;
   }
-  .mascot-video {
+  .retro-tv__screen {
     width: 200px;
+    padding: 8px;
+  }
+  .retro-tv__panel {
+    width: 200px;
+  }
+  .retro-tv__legs {
+    width: 140px;
   }
 }
 
@@ -1126,12 +1226,35 @@ a {
     right: 1rem;
     transform: none;
   }
-  .mascot-video {
-    width: 156px;
+  .retro-tv__screen {
+    width: 150px;
+    padding: 6px;
+    border-radius: 0.8rem;
+  }
+  .retro-tv__panel {
+    width: 150px;
+    padding: 0.3rem;
+    border-radius: 0 0 0.8rem 0.8rem;
+  }
+  .retro-tv__antenna {
+    width: 50px;
+    height: 20px;
+  }
+  .retro-tv__antenna-left,
+  .retro-tv__antenna-right {
+    height: 18px;
+    width: 2px;
+  }
+  .retro-tv__legs {
+    width: 100px;
+  }
+  .retro-tv__leg {
+    height: 10px;
+    width: 3px;
   }
   .mascot-sound-btn {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.8rem;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
   }
 }
 
@@ -1166,18 +1289,42 @@ a {
     justify-content: center;
   }
 
-  /* 마스코트 비디오: 더 작게, 콘텐츠 가리지 않도록 */
+  /* 마스코트 TV: 더 작게 */
   .mascot-wrap {
     bottom: 0.5rem;
     right: 0.5rem;
   }
-  .mascot-video {
-    width: 104px;
-    border-radius: 0.5rem;
+  .retro-tv__screen {
+    width: 120px;
+    padding: 5px;
+    border-radius: 0.6rem;
+    border-width: 2px;
+  }
+  .retro-tv__panel {
+    width: 120px;
+    padding: 0.25rem;
+    border-radius: 0 0 0.6rem 0.6rem;
+    border-width: 2px;
+  }
+  .retro-tv__antenna {
+    width: 40px;
+    height: 16px;
+  }
+  .retro-tv__antenna-left,
+  .retro-tv__antenna-right {
+    height: 14px;
+    width: 2px;
+  }
+  .retro-tv__legs {
+    width: 80px;
+  }
+  .retro-tv__leg {
+    height: 8px;
+    width: 2px;
   }
   .mascot-sound-btn {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.6rem;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
   }
 
   /* 메인 콘텐츠 하단 패딩 추가 (마스코트 비디오 영역 확보) */

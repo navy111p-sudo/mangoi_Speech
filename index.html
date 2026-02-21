@@ -286,22 +286,41 @@
         </div>
       </section>
 
-      <!-- Floating Mascot Video -->
+      <!-- Floating Mascot Video (레트로 TV 스타일) -->
       <div class="mascot-wrap">
-        <video
-          class="mascot-video"
-          id="mascotVideo"
-          playsinline
-          poster="assets/images/mangoi_thumbnail.jpg"
-        >
-          <source
-            src="assets/videos/망고아이_우주_음성_영상_생성.mp4"
-            type="video/mp4"
-          />
-        </video>
-        <button class="mascot-sound-btn" id="mascotSoundBtn" type="button">
-          소리 켜기
-        </button>
+        <div class="retro-tv">
+          <!-- TV 안테나 -->
+          <div class="retro-tv__antenna">
+            <div class="retro-tv__antenna-left"></div>
+            <div class="retro-tv__antenna-right"></div>
+            <div class="retro-tv__antenna-base"></div>
+          </div>
+          <!-- TV 화면 -->
+          <div class="retro-tv__screen">
+            <video
+              class="mascot-video"
+              id="mascotVideo"
+              playsinline
+              poster="assets/images/mangoi_thumbnail.jpg"
+            >
+              <source
+                src="assets/videos/망고아이_우주_음성_영상_생성.mp4"
+                type="video/mp4"
+              />
+            </video>
+          </div>
+          <!-- TV 하단 패널 (소리 버튼) -->
+          <div class="retro-tv__panel">
+            <button class="mascot-sound-btn" id="mascotSoundBtn" type="button">
+              소리 켜기
+            </button>
+          </div>
+          <!-- TV 다리 -->
+          <div class="retro-tv__legs">
+            <div class="retro-tv__leg"></div>
+            <div class="retro-tv__leg"></div>
+          </div>
+        </div>
       </div>
       <script>
         (function () {
