@@ -826,7 +826,15 @@ function listenToCorrected() {
 }
 
 /**
- * TTS로 텍스트 읽기
+ * TTS로 텍스트 읽기 (모바일 호환)
+ *
+ * 모바일에서 TTS가 안 되는 이유:
+ * 1. iOS Safari에서 cancel() 직후 speak()를 호출하면 무시됩니다.
+ *    -> setTimeout으로 약간의 딜레이를 줘서 해결합니다.
+ * 2. iOS에서 speechSynthesis가 15초 후 자동 일시정지됩니다 (known bug).
+ *    -> resume()을 주기적으로 호출해서 해결합니다.
+ * 3. 음성 목록(getVoices())이 아직 로드되지 않았을 수 있습니다.
+ *    -> 음성이 없어도 기본 음성으로 재생되도록 처리합니다.
  *
  * @param {string} text - 읽을 텍스트
  */
@@ -834,31 +842,76 @@ function speak(text) {
   // 이미 말하고 있으면 중지
   window.speechSynthesis.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US"; // 미국 영어
-  utterance.rate = 0.9; // 약간 느린 속도 (학습자 배려)
-  utterance.pitch = 1; // 기본 피치
-  utterance.volume = 1; // 최대 음량
+  // iOS에서 cancel() 직후 speak()가 무시되는 버그 우회
+  // 왜? iOS의 내부 오디오 세션이 cancel 후 즉시 새 발화를 받지 못합니다.
+  // 100ms 딜레이를 주면 오디오 세션이 리셋될 시간을 줍니다.
+  setTimeout(function () {
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US"; // 미국 영어
+    utterance.rate = 0.9; // 약간 느린 속도 (학습자 배려)
+    utterance.pitch = 1; // 기본 피치
+    utterance.volume = 1; // 최대 음량
 
-  // 영어 음성 선택 (가능한 경우)
-  const voices = window.speechSynthesis.getVoices();
-  const englishVoice =
-    voices.find((v) => v.lang.startsWith("en") && v.name.includes("Google")) ||
-    voices.find((v) => v.lang.startsWith("en"));
+    // 영어 음성 선택 (가능한 경우)
+    var voices = window.speechSynthesis.getVoices();
+    var englishVoice = null;
 
-  if (englishVoice) {
-    utterance.voice = englishVoice;
-  }
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang.startsWith("en")) {
+        if (
+          voices[i].name.includes("Google") ||
+          voices[i].name.includes("Samantha")
+        ) {
+          englishVoice = voices[i];
+          break;
+        }
+        if (!englishVoice) {
+          englishVoice = voices[i];
+        }
+      }
+    }
 
-  window.speechSynthesis.speak(utterance);
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+
+    // iOS에서 speechSynthesis가 중간에 멈추는 버그 해결
+    // 왜? iOS Safari는 긴 발화를 15초 후 자동으로 일시정지합니다.
+    // resume()을 주기적으로 호출하면 이를 방지할 수 있습니다.
+    var resumeTimer = null;
+
+    utterance.onstart = function () {
+      resumeTimer = setInterval(function () {
+        if (!window.speechSynthesis.speaking) {
+          clearInterval(resumeTimer);
+        } else {
+          window.speechSynthesis.resume();
+        }
+      }, 5000);
+    };
+
+    utterance.onend = function () {
+      if (resumeTimer) clearInterval(resumeTimer);
+    };
+
+    utterance.onerror = function () {
+      if (resumeTimer) clearInterval(resumeTimer);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }, 100);
 }
 
 // 음성 목록이 비동기로 로드되므로 미리 로드
+// 왜? 일부 브라우저(특히 모바일)는 getVoices()를 첫 호출 시 빈 배열을 반환합니다.
+// onvoiceschanged 이벤트를 통해 음성 목록이 로드되면 다시 가져옵니다.
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-  };
+  if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = function () {
+      window.speechSynthesis.getVoices();
+    };
+  }
 }
 
 // =====================
