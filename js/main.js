@@ -852,21 +852,52 @@ function speak(text) {
     utterance.pitch = 1; // 기본 피치
     utterance.volume = 1; // 최대 음량
 
-    // 영어 음성 선택 (가능한 경우)
+    // 미국 여성 음성 우선 선택
+    // 왜 여성 음성? 학습자가 더 또렷하게 들을 수 있고, 발음이 명확합니다.
+    // 브라우저별 대표적인 미국 여성 음성:
+    // - Chrome: "Google US English" (여성)
+    // - iOS/macOS: "Samantha" (여성)
+    // - Edge: "Microsoft Aria" (여성)
     var voices = window.speechSynthesis.getVoices();
     var englishVoice = null;
 
-    for (var i = 0; i < voices.length; i++) {
-      if (voices[i].lang.startsWith("en")) {
-        if (
-          voices[i].name.includes("Google") ||
-          voices[i].name.includes("Samantha")
-        ) {
+    // 우선순위 순서로 여성 음성 검색
+    var preferredNames = [
+      "Google US English", // Chrome 기본 미국 여성 음성
+      "Samantha", // iOS/macOS 미국 여성 음성
+      "Microsoft Aria", // Edge 미국 여성 음성
+      "Microsoft Jenny", // Edge 미국 여성 음성
+      "Karen", // macOS 호주 여성 (대안)
+      "Zira", // Windows 기본 여성 음성
+    ];
+
+    // 1차: 선호 음성 목록에서 찾기
+    for (var p = 0; p < preferredNames.length; p++) {
+      for (var i = 0; i < voices.length; i++) {
+        if (voices[i].name.includes(preferredNames[p])) {
           englishVoice = voices[i];
           break;
         }
-        if (!englishVoice) {
+      }
+      if (englishVoice) break;
+    }
+
+    // 2차: 선호 목록에 없으면, en-US 여성 음성 찾기
+    if (!englishVoice) {
+      for (var i = 0; i < voices.length; i++) {
+        if (voices[i].lang === "en-US") {
           englishVoice = voices[i];
+          break;
+        }
+      }
+    }
+
+    // 3차: en-US도 없으면, 영어 음성 아무거나
+    if (!englishVoice) {
+      for (var i = 0; i < voices.length; i++) {
+        if (voices[i].lang.startsWith("en")) {
+          englishVoice = voices[i];
+          break;
         }
       }
     }
