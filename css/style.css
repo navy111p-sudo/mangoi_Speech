@@ -1185,3 +1185,45 @@ a {
     padding-bottom: 6rem;
   }
 }
+
+/* === 카톡상담 플로팅 버튼 === */
+.kakao-chat-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #fee500;
+  color: #3c1e1e;
+  padding: 0.6rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.kakao-chat-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.kakao-chat-btn__icon {
+  flex-shrink: 0;
+}
+
+/* 모바일에서 카톡상담 버튼 크기 조정 */
+@media (max-width: 600px) {
+  .kakao-chat-btn {
+    bottom: 1rem;
+    left: 1rem;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
