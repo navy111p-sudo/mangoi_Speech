@@ -286,99 +286,6 @@
         </div>
       </section>
 
-      <!-- 상세 피드백 모달 -->
-      <div class="modal" id="feedbackModal">
-        <div class="modal__content">
-          <div class="modal__header">
-            <h3 class="modal__title">상세 피드백 (Detailed Feedback)</h3>
-            <button class="modal__close" id="btnCloseModal" aria-label="닫기">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          <div class="modal__body">
-            <!-- 점수 요약 -->
-            <div class="modal__section-title">Score Analysis</div>
-            <div class="modal__score-bar">
-              <div class="modal__score-item">
-                <span class="modal__score-label">Pronunciation</span>
-                <span class="modal__score-value" id="modalScorePronunciation"
-                  >-</span
-                >
-              </div>
-              <div class="modal__score-item">
-                <span class="modal__score-label">Grammar</span>
-                <span class="modal__score-value" id="modalScoreGrammar">-</span>
-              </div>
-              <div class="modal__score-item">
-                <span class="modal__score-label">Fluency</span>
-                <span class="modal__score-value" id="modalScoreFluency">-</span>
-              </div>
-            </div>
-
-            <!-- 문장 비교 -->
-            <div class="modal__section-title">Speech Analysis</div>
-            <div class="modal__text-box modal__text-box--original">
-              <div
-                style="
-                  font-size: 0.8rem;
-                  font-weight: 700;
-                  color: #94a3b8;
-                  margin-bottom: 4px;
-                "
-              >
-                YOU SAID:
-              </div>
-              <p id="modalOriginalText">-</p>
-            </div>
-
-            <div class="modal__text-box modal__text-box--corrected">
-              <div
-                style="
-                  font-size: 0.8rem;
-                  font-weight: 700;
-                  color: #10b981;
-                  margin-bottom: 4px;
-                "
-              >
-                CORRECTED:
-              </div>
-              <p id="modalCorrectedText">-</p>
-            </div>
-
-            <!-- 오류 목록 -->
-            <div class="modal__section-title">Grammar &amp; Errors</div>
-            <div
-              class="feedback__errors"
-              id="modalErrorList"
-              style="margin-bottom: 0"
-            >
-              <!-- 동적으로 추가됨 -->
-            </div>
-          </div>
-          <div class="modal__footer">
-            <button
-              class="btn btn--secondary"
-              id="btnPlayCorrectedModal"
-              type="button"
-              style="font-size: 0.85rem; padding: 0.5rem 1rem"
-            >
-              교정된 문장 듣기
-            </button>
-          </div>
-        </div>
-      </div>
       <!-- Floating Mascot Video -->
       <div class="mascot-wrap">
         <video
@@ -451,6 +358,99 @@
         })();
       </script>
     </main>
+
+    <!-- 상세 피드백 모달 (main 밖에 위치해야 모바일에서 정상 작동) -->
+    <div class="modal" id="feedbackModal">
+      <div class="modal__content">
+        <div class="modal__header">
+          <h3 class="modal__title">상세 피드백 (Detailed Feedback)</h3>
+          <button class="modal__close" id="btnCloseModal" aria-label="닫기">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal__body">
+          <!-- 점수 요약 -->
+          <div class="modal__section-title">Score Analysis</div>
+          <div class="modal__score-bar">
+            <div class="modal__score-item">
+              <span class="modal__score-label">Pronunciation</span>
+              <span class="modal__score-value" id="modalScorePronunciation"
+                >-</span
+              >
+            </div>
+            <div class="modal__score-item">
+              <span class="modal__score-label">Grammar</span>
+              <span class="modal__score-value" id="modalScoreGrammar">-</span>
+            </div>
+            <div class="modal__score-item">
+              <span class="modal__score-label">Fluency</span>
+              <span class="modal__score-value" id="modalScoreFluency">-</span>
+            </div>
+          </div>
+
+          <!-- 문장 비교 -->
+          <div class="modal__section-title">Speech Analysis</div>
+          <div class="modal__text-box modal__text-box--original">
+            <div
+              style="
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #94a3b8;
+                margin-bottom: 4px;
+              "
+            >
+              YOU SAID:
+            </div>
+            <p id="modalOriginalText">-</p>
+          </div>
+          <div class="modal__text-box modal__text-box--corrected">
+            <div
+              style="
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #10b981;
+                margin-bottom: 4px;
+              "
+            >
+              CORRECTED:
+            </div>
+            <p id="modalCorrectedText">-</p>
+          </div>
+
+          <!-- 오류 목록 -->
+          <div class="modal__section-title">Grammar &amp; Errors</div>
+          <div
+            class="feedback__errors"
+            id="modalErrorList"
+            style="margin-bottom: 0"
+          >
+            <!-- 동적으로 추가됨 -->
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button
+            class="btn btn--secondary"
+            id="btnPlayCorrectedModal"
+            type="button"
+            style="font-size: 0.85rem; padding: 0.5rem 1rem"
+          >
+            교정된 문장 듣기
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 푸터 -->
     <footer class="footer">
