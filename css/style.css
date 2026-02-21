@@ -1077,7 +1077,6 @@ a {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  pointer-events: none;
 }
 
 .mascot-video {
@@ -1086,6 +1085,7 @@ a {
   background-color: #fffdf5;
   mix-blend-mode: multiply;
   object-fit: cover;
+  pointer-events: none;
 }
 
 .mascot-sound-btn {
@@ -1119,6 +1119,17 @@ a {
 
 @media (max-width: 1100px) {
   .mascot-wrap {
-    display: none; /* 모바일/태블릿에서 숨김 */
+    /* 모바일에서 하단에 작게 배치 */
+    top: auto;
+    bottom: 1rem;
+    right: 1rem;
+    transform: none;
+  }
+  .mascot-video {
+    width: 120px;
+  }
+  .mascot-sound-btn {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.8rem;
   }
 }
