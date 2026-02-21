@@ -1346,8 +1346,10 @@ function showDemoReport() {
   state.currentAttempt = 3;
   showReport();
 
-  // 알림
-  alert("데모 데이터가 로드되었습니다. 리포트 카드를 확인하세요.");
+  // alert 대신 리포트 카드로 부드럽게 스크롤
+  setTimeout(function () {
+    DOM.reportSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 300);
 }
 
 // 전역 공개
