@@ -366,6 +366,61 @@ a { text-decoration: none; color: inherit; }
   flex-wrap: wrap;
 }
 
+/* === Report Comments (상세보기 자동 입력) === */
+.report__comments {
+  margin-top: 2rem; padding: 0 1.5rem;
+}
+.report__comments-title {
+  font-size: 1.1rem; font-weight: 700; color: #1e293b;
+  margin-bottom: 1rem; padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e6a800;
+}
+.comment-card {
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 0.75rem; padding: 1rem 1.25rem;
+  margin-bottom: 1rem; page-break-inside: avoid;
+}
+.comment-card.is-best { border-left: 4px solid #e6a800; background: #fffdf5; }
+.comment-card__header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.75rem; font-weight: 700; font-size: 0.9rem; color: #475569;
+}
+.comment-card__header .best-tag {
+  background: linear-gradient(135deg, #e6a800, #f0b800);
+  color: white; font-size: 0.7rem; padding: 0.15rem 0.5rem;
+  border-radius: 1rem; font-weight: 600;
+}
+.comment-card__scores {
+  display: flex; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap;
+}
+.comment-card__score {
+  font-size: 0.8rem; color: #64748b;
+  background: white; border: 1px solid #e2e8f0;
+  padding: 0.2rem 0.6rem; border-radius: 0.5rem;
+}
+.comment-card__score strong { color: #1e293b; }
+.comment-card__row { margin-bottom: 0.5rem; }
+.comment-card__label {
+  font-size: 0.75rem; font-weight: 600; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;
+}
+.comment-card__text {
+  font-size: 0.85rem; color: #334155; line-height: 1.5;
+}
+.comment-card__errors {
+  margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #e2e8f0;
+}
+.comment-card__error-item {
+  font-size: 0.8rem; color: #dc2626; padding: 0.2rem 0;
+  padding-left: 1rem; position: relative;
+}
+.comment-card__error-item::before {
+  content: "⚠"; position: absolute; left: 0; top: 0.2rem; font-size: 0.7rem;
+}
+.comment-card__no-error {
+  font-size: 0.8rem; color: #10b981; font-weight: 600;
+}
+
 /* === Print Button === */
 .btn--print {
   display: inline-flex; align-items: center; gap: 0.5rem;
@@ -420,6 +475,13 @@ a { text-decoration: none; color: inherit; }
     border: 1px solid #ddd !important;
   }
   .report__actions { display: none !important; }
+  .report__comments { padding: 0 !important; margin-top: 1.5rem !important; page-break-before: auto; }
+  .report__comments-title { font-size: 1rem !important; border-color: #333 !important; }
+  .comment-card { background: white !important; border: 1px solid #ccc !important; border-radius: 0.5rem !important; padding: 0.75rem 1rem !important; margin-bottom: 0.75rem !important; page-break-inside: avoid; }
+  .comment-card.is-best { border-left: 4px solid #e6a800 !important; }
+  .comment-card__scores { gap: 0.5rem !important; }
+  .comment-card__score { border: 1px solid #ddd !important; }
+  .detail-btn { display: none !important; }
   /* Print header */
   .report::before {
     content: "Mangoi Speech Coach - Report Card";
