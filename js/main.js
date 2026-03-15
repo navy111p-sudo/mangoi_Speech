@@ -33,17 +33,17 @@ const DOM = {
   // 레벨 선택
   levelSelect: document.getElementById("levelSelect"),
   levelInfo: document.getElementById("levelInfo"),
-  // 연습 세션
+  // 연습 섹션
   targetSentence: document.getElementById("targetSentence"),
   btnChangeSentence: document.getElementById("btnChangeSentence"),
   btnListenTarget: document.getElementById("btnListenTarget"),
-  // 녹음 세션
+  // 녹음 섹션
   btnRecord: document.getElementById("btnRecord"),
   recorderStatus: document.getElementById("recorderStatus"),
   attemptDots: document.getElementById("attemptDots"),
   waveAnimation: document.getElementById("waveAnimation"),
   recognizedText: document.getElementById("recognizedText"),
-  // 피드백 세션
+  // 피드백 섹션
   feedbackSection: document.getElementById("feedbackSection"),
   originalText: document.getElementById("originalText"),
   correctedText: document.getElementById("correctedText"),
@@ -271,7 +271,7 @@ function handleRecognitionEnd() {
     DOM.recorderStatus.textContent = "분석 중...";
     evaluateSpeech(spokenText);
   } else {
-    DOM.recorderStatus.textContent = `시도 ${state.currentAttempt}/${state.maxAttempts} - 음성이 인시되지 않았습니다. 다시 시도해주세요.`;
+    DOM.recorderStatus.textContent = `시도 ${state.currentAttempt}/${state.maxAttempts} - 음성이 인식되지 않았습니다. 다시 시도해주세요.`;
     DOM.recognizedText.textContent = "음성 인식 결과가 여기에 표시됩니다";
     DOM.recognizedText.classList.add("recorder__text--empty");
   }
@@ -385,7 +385,7 @@ function performBasicGrammarCheck(text) {
       offset: text.length - 1,
       length: 1,
       replacements: [{ value: text.trim() + "." }],
-      rule: { id: "SENTENCE_END_PUNCT", description: "문장은 마침표, 물음표, 느낼표로 끝나야 합니다." },
+      rule: { id: "SENTENCE_END_PUNCT", description: "문장은 마침표, 문음표, 느낼표로 끝나야 합니다." },
     });
   }
   if (/ +/.test(text)) {
@@ -540,7 +540,7 @@ function listenToCorrected() {
 /**
  * 미국 원어민 발음 TTS
  * - en-US 여성 음성 우선 (Google US English, Samantha 등)
- * - 학습자 배려 앍간 느린 속도 (0.85)
+ * - 학습자 배려 앑간 느린 속도 (0.85)
  */
 // 미국 원어민 음성 캐시
 var cachedUSVoice = null;
@@ -643,49 +643,36 @@ function getUSNativeVoice() {
 }
 
 function speak(text) {
+  if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
 
-  var doSpeak = function () {
-    var utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
+  // iOS/모바일: 유저 제스처 체인을 유지하기 위해 동기적으로 speak 호출
+  var utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 1;
 
-    var voice = getUSNativeVoice();
-    if (voice) {
-      utterance.voice = voice;
-    }
+  var voice = getUSNativeVoice();
+  if (voice) {
+    utterance.voice = voice;
+  }
 
-    // iOS 멈춤 버그 방지
-    var resumeTimer = null;
-    utterance.onstart = function () {
-      resumeTimer = setInterval(function () {
-        if (!window.speechSynthesis.speaking) clearInterval(resumeTimer);
-        else window.speechSynthesis.resume();
-      }, 5000);
-    };
-    utterance.onend = function () { if (resumeTimer) clearInterval(resumeTimer); };
-    utterance.onerror = function () { if (resumeTimer) clearInterval(resumeTimer); };
-
-    window.speechSynthesis.speak(utterance);
+  // iOS 멈춤 버그 방지 (15초 이상 발화 시 멈추는 문제)
+  var resumeTimer = null;
+  utterance.onstart = function () {
+    resumeTimer = setInterval(function () {
+      if (!window.speechSynthesis.speaking) clearInterval(resumeTimer);
+      else window.speechSynthesis.resume();
+    }, 3000);
+  };
+  utterance.onend = function () { if (resumeTimer) clearInterval(resumeTimer); };
+  utterance.onerror = function (e) {
+    if (resumeTimer) clearInterval(resumeTimer);
+    console.warn("[TTS] Error:", e.error);
   };
 
-  // voices가 아직 로드 안 됐으면 기다림
-  var voices = window.speechSynthesis.getVoices();
-  if (!voices || voices.length === 0) {
-    var waited = 0;
-    var waitInterval = setInterval(function () {
-      voices = window.speechSynthesis.getVoices();
-      waited += 50;
-      if ((voices && voices.length > 0) || waited > 2000) {
-        clearInterval(waitInterval);
-        setTimeout(doSpeak, 100);
-      }
-    }, 50);
-  } else {
-    setTimeout(doSpeak, 100);
-  }
+  window.speechSynthesis.speak(utterance);
 }
 
 // 음성 목록 미리 로드 및 캐시
@@ -747,7 +734,7 @@ function changeSentence() {
   DOM.feedbackSection.classList.remove("is-visible");
   DOM.reportSection.classList.remove("is-visible");
   DOM.btnNextAttempt.style.display = "none";
-  DOM.recognizedText.textContent = "마이크 버튼을 누러고 영어로 말해보세요";
+  DOM.recognizedText.textContent = "마이크 버튼을 눌러고 영어로 말해보세요";
   DOM.recognizedText.classList.add("recorder__text--empty");
   DOM.targetSentence.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -825,7 +812,7 @@ function buildReportComments(bestAttempt) {
       '<span class="comment-card__score">발음 <strong>' + attempt.scores.pronunciation.toFixed(1) + '</strong></span>' +
       '<span class="comment-card__score">문법 <strong>' + attempt.scores.grammar.toFixed(1) + '</strong></span>' +
       '<span class="comment-card__score">유창성 <strong>' + attempt.scores.fluency.toFixed(1) + '</strong></span>' +
-      '<span class="comment-card__score">평김 <strong>' + attempt.scores.average.toFixed(1) + '</strong></span>' +
+      '<span class="comment-card__score">평균 <strong>' + attempt.scores.average.toFixed(1) + '</strong></span>' +
       '</div>';
 
     // 인식된 텍스트
@@ -971,8 +958,9 @@ function printReport() {
   // Canvas(차트)를 이미지로 변환해서 인쇄 시에도 보이게 처리
   var canvas = document.getElementById("radarChart");
   var chartImg = null;
-  if (canvas && canvas.style.display !== "none") {
-    try {
+
+  try {
+    if (canvas && canvas.style.display !== "none" && canvas.width > 0) {
       chartImg = document.createElement("img");
       chartImg.src = canvas.toDataURL("image/png");
       chartImg.style.maxWidth = "350px";
@@ -982,12 +970,22 @@ function printReport() {
       chartImg.className = "print-chart-img";
       canvas.parentNode.insertBefore(chartImg, canvas);
       canvas.style.display = "none";
-    } catch (e) {
-      console.warn("차트 이미지 변환 실패:", e);
     }
+  } catch (e) {
+    console.warn("차트 이미지 변환 실패:", e);
+    chartImg = null;
   }
 
-  window.print();
+  // 모바일 대응: window.print() 지원 여부 확인
+  if (typeof window.print === "function") {
+    try {
+      window.print();
+    } catch (e) {
+      alert("이 브라우저에서는 인쇄 기능이 지원되지 않습니다.\n브라우저 메뉴에서 '공유' > '인쇄' 또는 '페이지 인쇄'를 사용해주세요.");
+    }
+  } else {
+    alert("이 브라우저에서는 인쇄 기능이 지원되지 않습니다.\n브라우저 메뉴에서 '공유' > '인쇄' 또는 '페이지 인쇄'를 사용해주세요.");
+  }
 
   // 인쇄 후 원래 Canvas 복원
   setTimeout(function () {
