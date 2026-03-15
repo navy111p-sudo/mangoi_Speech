@@ -271,7 +271,7 @@ function handleRecognitionEnd() {
     DOM.recorderStatus.textContent = "분석 중...";
     evaluateSpeech(spokenText);
   } else {
-    DOM.recorderStatus.textContent = `시도 ${state.currentAttempt}/${state.maxAttempts} - 음성이 인시되지 않았습니다. 다시 시도해주세요.`;
+    DOM.recorderStatus.textContent = `시도 ${state.currentAttempt}/${state.maxAttempts} - 음성이 인식되지 않았습니다. 다시 시도해주세요.`;
     DOM.recognizedText.textContent = "음성 인식 결과가 여기에 표시됩니다";
     DOM.recognizedText.classList.add("recorder__text--empty");
   }
@@ -385,7 +385,7 @@ function performBasicGrammarCheck(text) {
       offset: text.length - 1,
       length: 1,
       replacements: [{ value: text.trim() + "." }],
-      rule: { id: "SENTENCE_END_PUNCT", description: "문장은 마침표, 물음표, 느낼표로 끝나야 합니다." },
+      rule: { id: "SENTENCE_END_PUNCT", description: "문장은 마침표, 물음표, 느낌표로 끝나야 합니다." },
     });
   }
   if (/ +/.test(text)) {
@@ -540,7 +540,7 @@ function listenToCorrected() {
 /**
  * 미국 원어민 발음 TTS
  * - en-US 여성 음성 우선 (Google US English, Samantha 등)
- * - 학습자 배려 약간 느릴 속도 (0.85)
+ * - 학습자 배려 앍간 느린 속도 (0.85)
  */
 function speak(text) {
   window.speechSynthesis.cancel();
@@ -600,7 +600,7 @@ function speak(text) {
 
     if (englishVoice) utterance.voice = englishVoice;
 
-    // iOS 멀춤 버그 방지
+    // iOS 멈춤 버그 방지
     var resumeTimer = null;
     utterance.onstart = function () {
       resumeTimer = setInterval(function () {
@@ -772,7 +772,7 @@ function createRadarChart(scores) {
 }
 
 // =====================
-// 10. 모닫 제어
+// 10. 모달 제어
 // =====================
 function showModal(attempt) {
   DOM.modalScorePronunciation.textContent = attempt.scores.pronunciation.toFixed(1);
@@ -820,6 +820,43 @@ function showDemoReport() {
   setTimeout(function () { DOM.reportSection.scrollIntoView({ behavior: "smooth", block: "start" }); }, 300);
 }
 window.showDemoReport = showDemoReport;
+
+// =====================
+// 인쇄 / PDF 저장 기능
+// =====================
+function printReport() {
+  // Canvas(차트)를 이미지로 변환해서 인쇄 시에도 보이게 처리
+  var canvas = document.getElementById("radarChart");
+  var chartImg = null;
+  if (canvas && canvas.style.display !== "none") {
+    try {
+      chartImg = document.createElement("img");
+      chartImg.src = canvas.toDataURL("image/png");
+      chartImg.style.maxWidth = "350px";
+      chartImg.style.maxHeight = "350px";
+      chartImg.style.margin = "0 auto";
+      chartImg.style.display = "block";
+      chartImg.className = "print-chart-img";
+      canvas.parentNode.insertBefore(chartImg, canvas);
+      canvas.style.display = "none";
+    } catch (e) {
+      console.warn("차트 이미지 변환 실패:", e);
+    }
+  }
+
+  window.print();
+
+  // 인쇄 후 원래 Canvas 복원
+  setTimeout(function () {
+    if (chartImg && chartImg.parentNode) {
+      chartImg.parentNode.removeChild(chartImg);
+    }
+    if (canvas) {
+      canvas.style.display = "";
+    }
+  }, 1000);
+}
+window.printReport = printReport;
 
 // DOM 로드 후 초기화
 document.addEventListener("DOMContentLoaded", init);
