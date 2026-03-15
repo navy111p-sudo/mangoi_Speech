@@ -363,6 +363,78 @@ a { text-decoration: none; color: inherit; }
 .report__history-table .is-best td { background: rgba(200,150,0,0.05); border-color: rgba(200,150,0,0.2); }
 .report__actions {
   display: flex; justify-content: center; gap: 1rem; margin-top: 3rem; padding-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+/* === Print Button === */
+.btn--print {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #475569, #334155);
+  color: white; font-weight: 700; font-size: 0.9rem;
+  border-radius: 2rem; border: none; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(71,85,105,0.3);
+  transition: all 0.3s;
+}
+.btn--print:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(71,85,105,0.4);
+  background: linear-gradient(135deg, #334155, #1e293b);
+}
+
+/* === Print Styles === */
+@media print {
+  body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .header, .footer, .mascot-wrap, .kakao-chat-btn,
+  .practice, .recorder, .feedback, .modal,
+  .btn--print, #btnRestart, #browserSupport,
+  .retro-tv, .mascot-sound-btn { display: none !important; }
+  .main { padding: 0 !important; max-width: 100% !important; }
+  .report {
+    display: block !important; box-shadow: none !important;
+    border-radius: 0 !important; padding: 0 !important;
+    page-break-inside: avoid;
+  }
+  .report__header {
+    margin: 0 !important; border-radius: 0 !important;
+    padding: 2rem 1rem !important;
+    background: linear-gradient(135deg, #e6a800, #f0b800) !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .report__scores { padding: 1rem 0 !important; gap: 1rem !important; }
+  .score-card {
+    border: 2px solid #e6a800 !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .report__average {
+    margin: 0 0 1rem !important;
+    background: #fffdf5 !important;
+    border: 2px solid #e6a800 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .report__chart { page-break-inside: avoid; margin: 1rem 0 !important; }
+  .report__history { padding: 0 !important; page-break-inside: avoid; }
+  .report__history-table td, .report__history-table th {
+    padding: 0.5rem !important;
+    border: 1px solid #ddd !important;
+  }
+  .report__actions { display: none !important; }
+  /* Print header */
+  .report::before {
+    content: "Mangoi Speech Coach - Report Card";
+    display: block; text-align: center;
+    font-size: 0.8rem; color: #94a3b8;
+    padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
+  }
+  .report::after {
+    content: "Mangoi Speech Coach © 2026 | navy111p-sudo.github.io/mangoi_Speech";
+    display: block; text-align: center;
+    font-size: 0.7rem; color: #94a3b8;
+    padding-top: 1rem; border-top: 1px solid #e2e8f0;
+    margin-top: 1rem;
+  }
 }
 
 /* === Score Card === */
