@@ -271,7 +271,7 @@ function handleRecognitionEnd() {
     DOM.recorderStatus.textContent = "분석 중...";
     evaluateSpeech(spokenText);
   } else {
-    DOM.recorderStatus.textContent = `시도 ${state.currentAttempt}/${state.maxAttempts} - 음성이 인식되지 않았습니다. 다시 시도해주세요.`;
+    DOM.recorderStatus.textContent = `시도 ${state.currentAttempt}/${state.maxAttempts} - 음성이 인시되지 않았습니다. 다시 시도해주세요.`;
     DOM.recognizedText.textContent = "음성 인식 결과가 여기에 표시됩니다";
     DOM.recognizedText.classList.add("recorder__text--empty");
   }
@@ -385,7 +385,7 @@ function performBasicGrammarCheck(text) {
       offset: text.length - 1,
       length: 1,
       replacements: [{ value: text.trim() + "." }],
-      rule: { id: "SENTENCE_END_PUNCT", description: "문장은 마침표, 물음표, 느낌표로 끝나야 합니다." },
+      rule: { id: "SENTENCE_END_PUNCT", description: "문장은 마침표, 물음표, 느낼표로 끝나야 합니다." },
     });
   }
   if (/ +/.test(text)) {
@@ -540,7 +540,7 @@ function listenToCorrected() {
 /**
  * 미국 원어민 발음 TTS
  * - en-US 여성 음성 우선 (Google US English, Samantha 등)
- * - 학습자 배려 앍간 느린 속도 (0.85)
+ * - 학습 배려 앝간 느린 속도 (0.85)
  */
 function speak(text) {
   window.speechSynthesis.cancel();
@@ -672,7 +672,7 @@ function changeSentence() {
   DOM.feedbackSection.classList.remove("is-visible");
   DOM.reportSection.classList.remove("is-visible");
   DOM.btnNextAttempt.style.display = "none";
-  DOM.recognizedText.textContent = "마이크 버튼을 누르고 영어로 말해보세요";
+  DOM.recognizedText.textContent = "마이크 버튼을 눌르고 영어로 말해보세요";
   DOM.recognizedText.classList.add("recorder__text--empty");
   DOM.targetSentence.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -720,8 +720,76 @@ function showReport() {
   });
 
   createRadarChart(bestAttempt.scores);
+  buildReportComments(bestAttempt);
   DOM.reportSection.classList.add("is-visible");
   DOM.reportSection.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/**
+ * 리포트 하단 코멘트 섹션 자동 생성
+ * - 각 시도별 상세보기 내용을 자동으로 입력
+ */
+function buildReportComments(bestAttempt) {
+  var container = document.getElementById("reportCommentsBody");
+  if (!container) return;
+  container.innerHTML = "";
+
+  state.attempts.forEach(function (attempt, index) {
+    var isBest = attempt === bestAttempt;
+    var card = document.createElement("div");
+    card.className = "comment-card" + (isBest ? " is-best" : "");
+
+    // 헤더 (시도 번호 + 최고 태그)
+    var header = '<div class="comment-card__header">' +
+      '<span>Attempt ' + (index + 1) + '</span>' +
+      (isBest ? '<span class="best-tag">Best</span>' : '') +
+      '</div>';
+
+    // 점수 바
+    var scores = '<div class="comment-card__scores">' +
+      '<span class="comment-card__score">발음 <strong>' + attempt.scores.pronunciation.toFixed(1) + '</strong></span>' +
+      '<span class="comment-card__score">문법 <strong>' + attempt.scores.grammar.toFixed(1) + '</strong></span>' +
+      '<span class="comment-card__score">유창성 <strong>' + attempt.scores.fluency.toFixed(1) + '</strong></span>' +
+      '<span class="comment-card__score">평균 <strong>' + attempt.scores.average.toFixed(1) + '</strong></span>' +
+      '</div>';
+
+    // 인식된 텍스트
+    var spoken = '<div class="comment-card__row">' +
+      '<div class="comment-card__label">Spoken</div>' +
+      '<div class="comment-card__text">' + escapeHtml(attempt.spokenText) + '</div>' +
+      '</div>';
+
+    // 교정된 텍스트
+    var corrected = '<div class="comment-card__row">' +
+      '<div class="comment-card__label">Corrected</div>' +
+      '<div class="comment-card__text">' + escapeHtml(attempt.correctedText) + '</div>' +
+      '</div>';
+
+    // 오류 목록
+    var errors = '';
+    if (attempt.errors && attempt.errors.length > 0) {
+      errors = '<div class="comment-card__errors">';
+      attempt.errors.forEach(function (err) {
+        var desc = (err.rule && err.rule.description) ? err.rule.description : err.message;
+        var fix = (err.replacements && err.replacements.length > 0)
+          ? ' (수정: "' + err.replacements[0].value + '")'
+          : '';
+        errors += '<div class="comment-card__error-item">' + escapeHtml(desc + fix) + '</div>';
+      });
+      errors += '</div>';
+    } else {
+      errors = '<div class="comment-card__no-error">문법 오류가 없습니다. 잘했습니다!</div>';
+    }
+
+    card.innerHTML = header + scores + spoken + corrected + errors;
+    container.appendChild(card);
+  });
+}
+
+function escapeHtml(text) {
+  var div = document.createElement("div");
+  div.textContent = text || "";
+  return div.innerHTML;
 }
 
 function getGrade(average) {
