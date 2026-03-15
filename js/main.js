@@ -33,17 +33,17 @@ const DOM = {
   // 레벨 선택
   levelSelect: document.getElementById("levelSelect"),
   levelInfo: document.getElementById("levelInfo"),
-  // 연습 섹션
+  // 연습 세션
   targetSentence: document.getElementById("targetSentence"),
   btnChangeSentence: document.getElementById("btnChangeSentence"),
   btnListenTarget: document.getElementById("btnListenTarget"),
-  // 녹음 섹션
+  // 녹음 세션
   btnRecord: document.getElementById("btnRecord"),
   recorderStatus: document.getElementById("recorderStatus"),
   attemptDots: document.getElementById("attemptDots"),
   waveAnimation: document.getElementById("waveAnimation"),
   recognizedText: document.getElementById("recognizedText"),
-  // 피드백 섹션
+  // 피드백 세션
   feedbackSection: document.getElementById("feedbackSection"),
   originalText: document.getElementById("originalText"),
   correctedText: document.getElementById("correctedText"),
@@ -540,65 +540,122 @@ function listenToCorrected() {
 /**
  * 미국 원어민 발음 TTS
  * - en-US 여성 음성 우선 (Google US English, Samantha 등)
- * - 학습 배려 앝간 느린 속도 (0.85)
+ * - 학습자 배려 앍간 느린 속도 (0.85)
  */
+// 미국 원어민 음성 캐시
+var cachedUSVoice = null;
+var voicesReady = false;
+
+function getUSNativeVoice() {
+  if (cachedUSVoice && voicesReady) return cachedUSVoice;
+
+  var voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  voicesReady = true;
+
+  // 미국 원어민 고품질 음성 우선순위 (Natural/Enhanced 우선)
+  var preferredNames = [
+    // Natural/Enhanced 음성 (최고 품질)
+    "Microsoft Aria Online (Natural)",
+    "Microsoft Jenny Online (Natural)",
+    "Microsoft Guy Online (Natural)",
+    "Microsoft Ana Online (Natural)",
+    "Google US English",
+    // macOS/iOS 고품질 음성
+    "Samantha (Enhanced)",
+    "Samantha",
+    "Allison (Enhanced)",
+    "Allison",
+    "Ava (Enhanced)",
+    "Ava",
+    "Tom",
+    "Alex",
+    // Windows/Edge 음성
+    "Microsoft Aria",
+    "Microsoft Jenny",
+    "Microsoft Guy",
+    "Microsoft Zira",
+    "Zira",
+    // Android 음성
+    "English United States",
+  ];
+
+  var englishVoice = null;
+
+  // 1차: 선호 이름 목록에서 검색
+  for (var p = 0; p < preferredNames.length; p++) {
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].name.indexOf(preferredNames[p]) !== -1 && voices[i].lang.indexOf("en") === 0) {
+        englishVoice = voices[i];
+        break;
+      }
+    }
+    if (englishVoice) break;
+  }
+
+  // 2차: en-US + 네트워크(고품질) 음성 우선
+  if (!englishVoice) {
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang === "en-US" && !voices[i].localService) {
+        englishVoice = voices[i];
+        break;
+      }
+    }
+  }
+
+  // 3차: en-US 로컬 음성
+  if (!englishVoice) {
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang === "en-US") {
+        englishVoice = voices[i];
+        break;
+      }
+    }
+  }
+
+  // 4차: en_US (안드로이드 형식)
+  if (!englishVoice) {
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang === "en_US" || voices[i].lang === "en-us") {
+        englishVoice = voices[i];
+        break;
+      }
+    }
+  }
+
+  // 5차: 영어 아무거나
+  if (!englishVoice) {
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang.indexOf("en") === 0) {
+        englishVoice = voices[i];
+        break;
+      }
+    }
+  }
+
+  if (englishVoice) {
+    cachedUSVoice = englishVoice;
+    console.log("[TTS] Selected voice:", englishVoice.name, englishVoice.lang, englishVoice.localService ? "(local)" : "(network)");
+  }
+
+  return englishVoice;
+}
+
 function speak(text) {
   window.speechSynthesis.cancel();
 
-  setTimeout(function () {
+  var doSpeak = function () {
     var utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
-    utterance.rate = 0.85; // 학습자 배려 느린 속도
+    utterance.rate = 0.9;
     utterance.pitch = 1;
     utterance.volume = 1;
 
-    // 미국 원어민 여성 음성 우선 선택
-    var voices = window.speechSynthesis.getVoices();
-    var englishVoice = null;
-
-    // 미국 원어민 음성 우선순위 (여성)
-    var preferredNames = [
-      "Google US English",     // Chrome 미국 여성
-      "Samantha",              // iOS/macOS 미국 여성
-      "Microsoft Aria",        // Edge 미국 여성
-      "Microsoft Jenny",       // Edge 미국 여성
-      "Alex",                  // macOS 미국 남성
-      "Karen",                 // macOS 호주 여성
-      "Zira",                  // Windows 여성
-    ];
-
-    // 1차: 선호 음성 검색
-    for (var p = 0; p < preferredNames.length; p++) {
-      for (var i = 0; i < voices.length; i++) {
-        if (voices[i].name.includes(preferredNames[p])) {
-          englishVoice = voices[i];
-          break;
-        }
-      }
-      if (englishVoice) break;
+    var voice = getUSNativeVoice();
+    if (voice) {
+      utterance.voice = voice;
     }
-
-    // 2차: en-US 음성
-    if (!englishVoice) {
-      for (var i = 0; i < voices.length; i++) {
-        if (voices[i].lang === "en-US") {
-          englishVoice = voices[i];
-          break;
-        }
-      }
-    }
-
-    // 3차: 영어 음성
-    if (!englishVoice) {
-      for (var i = 0; i < voices.length; i++) {
-        if (voices[i].lang.startsWith("en")) {
-          englishVoice = voices[i];
-          break;
-        }
-      }
-    }
-
-    if (englishVoice) utterance.voice = englishVoice;
 
     // iOS 멈춤 버그 방지
     var resumeTimer = null;
@@ -612,15 +669,33 @@ function speak(text) {
     utterance.onerror = function () { if (resumeTimer) clearInterval(resumeTimer); };
 
     window.speechSynthesis.speak(utterance);
-  }, 100);
+  };
+
+  // voices가 아직 로드 안 됐으면 기다림
+  var voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) {
+    var waited = 0;
+    var waitInterval = setInterval(function () {
+      voices = window.speechSynthesis.getVoices();
+      waited += 50;
+      if ((voices && voices.length > 0) || waited > 2000) {
+        clearInterval(waitInterval);
+        setTimeout(doSpeak, 100);
+      }
+    }, 50);
+  } else {
+    setTimeout(doSpeak, 100);
+  }
 }
 
-// 음성 목록 미리 로드
+// 음성 목록 미리 로드 및 캐시
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
   if (window.speechSynthesis.onvoiceschanged !== undefined) {
     window.speechSynthesis.onvoiceschanged = function () {
-      window.speechSynthesis.getVoices();
+      cachedUSVoice = null;
+      voicesReady = false;
+      getUSNativeVoice();
     };
   }
 }
@@ -672,7 +747,7 @@ function changeSentence() {
   DOM.feedbackSection.classList.remove("is-visible");
   DOM.reportSection.classList.remove("is-visible");
   DOM.btnNextAttempt.style.display = "none";
-  DOM.recognizedText.textContent = "마이크 버튼을 눌르고 영어로 말해보세요";
+  DOM.recognizedText.textContent = "마이크 버튼을 누러고 영어로 말해보세요";
   DOM.recognizedText.classList.add("recorder__text--empty");
   DOM.targetSentence.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -750,7 +825,7 @@ function buildReportComments(bestAttempt) {
       '<span class="comment-card__score">발음 <strong>' + attempt.scores.pronunciation.toFixed(1) + '</strong></span>' +
       '<span class="comment-card__score">문법 <strong>' + attempt.scores.grammar.toFixed(1) + '</strong></span>' +
       '<span class="comment-card__score">유창성 <strong>' + attempt.scores.fluency.toFixed(1) + '</strong></span>' +
-      '<span class="comment-card__score">평균 <strong>' + attempt.scores.average.toFixed(1) + '</strong></span>' +
+      '<span class="comment-card__score">평김 <strong>' + attempt.scores.average.toFixed(1) + '</strong></span>' +
       '</div>';
 
     // 인식된 텍스트
