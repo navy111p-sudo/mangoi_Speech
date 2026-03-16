@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <title>Mangoi Speech Coach - 영어 발음 교정</title>
+  <!-- IE11/Edge 폴리필: Promise, fetch, URL, Symbol -->
+  <!--[if IE]>
+  <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3/dist/fetch.umd.js"></script>
+  <![endif]-->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Pretendard:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=4">
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header" role="banner">
+    <div class="header__inner">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="https://navy111p-sudo.github.io/mangoi_Speech/images/mangoi_logo.png" alt="Mangoi Logo" class="header__logo" style="height: 50px;" onerror="this.style.display='none'">
+        <div>
+          <h1 class="header__title">Speech <span>Coach</span></h1>
+          <div class="header__subtitle">AI 기반 영어 발음 교정 &amp; 문법 학습 도구</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="btn btn--secondary" onclick="showDemoReport()" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">결과 미리보기</button>
+        <span class="header__badge" id="browserSupport">지원됨</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+
+    <!-- ===== 레벨 선택 섹션 ===== -->
+    <section class="practice" style="border-top: 6px solid #e6a800; padding: 1.5rem 2rem;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="display: inline-block; width: 6px; height: 24px; background: #e6a800; border-radius: 4px;"></span>
+          BTS 레벨 선택
+        </h2>
+        <select id="levelSelect" style="
+          width: 100%;
+          max-width: 500px;
+          padding: 0.75rem 1rem;
+          border: 2px solid rgba(200, 150, 0, 0.3);
+          border-radius: 1rem;
+          font-size: 1rem;
+          font-weight: 600;
+          font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+          background: white;
+          color: #0f172a;
+          cursor: pointer;
+          outline: none;
+          transition: border-color 0.3s;
+        ">
+          <option value="" disabled>레벨을 선택하세요</option>
+        </select>
+        <div id="levelInfo" style="font-size: 0.85rem; color: #475569; font-weight: 500;"></div>
+      </div>
+    </section>
+
+    <!-- ===== 연습 섹션 ===== -->
+    <section class="practice" role="region">
+      <div class="practice__instruction">아래 문장을 큰 소리로 읽어보세요</div>
+      <div class="practice__sentence" id="targetSentence">Loading...</div>
+      <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn btn--secondary" id="btnChangeSentence" type="button">다른 문장 바꾸기</button>
+        <button class="btn btn--listen" id="btnListenTarget" type="button">🔊 원어민 발음 듣기</button>
+      </div>
+    </section>
+
+    <!-- ===== 녹음 섹션 ===== -->
+    <section class="recorder" role="region">
+      <div class="recorder__status" id="recorderStatus">시도 1/3 - 버튼을 눌러 녹음을 시작하세요</div>
+      <div class="recorder__attempts" id="attemptDots">
+        <div class="recorder__dot is-active" data-attempt="1"></div>
+        <div class="recorder__dot" data-attempt="2"></div>
+        <div class="recorder__dot" data-attempt="3"></div>
+      </div>
+      <button class="btn btn--record" id="btnRecord" type="button">🎙</button>
+      <div class="wave" id="waveAnimation">
+        <div class="wave__bar"></div>
+        <div class="wave__bar"></div>
+        <div class="wave__bar"></div>
+        <div class="wave__bar"></div>
+        <div class="wave__bar"></div>
+      </div>
+      <div class="recorder__text recorder__text--empty" id="recognizedText">마이크 버튼을 누르고 영어로 말해보세요</div>
+    </section>
+
+    <!-- ===== 피드백 섹션 ===== -->
+    <section class="feedback" id="feedbackSection" role="region">
+      <h2 class="feedback__title">분석 결과</h2>
+      <div class="feedback__comparison">
+        <div class="feedback__original">
+          <span class="feedback__label">학생의 문장 (Your Speech)</span>
+          <span id="originalText"></span>
+        </div>
+        <div class="feedback__corrected">
+          <span class="feedback__label">AI 교정 문장 (Corrected)</span>
+          <span id="correctedText"></span>
+        </div>
+      </div>
+      <div class="feedback__errors" id="errorList"></div>
+      <div class="feedback__listen-btn">
+        <button class="btn btn--listen" id="btnListenCorrected" type="button">🔊 교정된 문장 듣기</button>
+      </div>
+      <div style="text-align: center; margin-top: 1rem;">
+        <button class="btn btn--primary" id="btnNextAttempt" type="button" style="display: none;">다음 시도하기</button>
+      </div>
+    </section>
+
+    <!-- ===== 리포트 카드 섹션 ===== -->
+    <section class="report" id="reportSection" role="region">
+      <div class="report__header">
+        <h2 class="report__title">Final Report Card</h2>
+        <div class="report__subtitle" style="opacity: 0.9; font-size: 0.9rem;">Great job! Here is your result.</div>
+        <div class="report__grade" id="gradeDisplay"></div>
+      </div>
+      <div class="report__scores">
+        <div class="score-card">
+          <div class="score-card__value" id="scorePronunciation">0.0</div>
+          <div class="score-card__label">Pronunciation</div>
+        </div>
+        <div class="score-card">
+          <div class="score-card__value" id="scoreGrammar">0.0</div>
+          <div class="score-card__label">Grammar</div>
+        </div>
+        <div class="score-card">
+          <div class="score-card__value" id="scoreFluency">0.0</div>
+          <div class="score-card__label">Fluency</div>
+        </div>
+      </div>
+      <div class="report__average">
+        <div class="report__average-value" id="scoreAverage">0.0</div>
+        <div class="report__average-label">Total Average Score</div>
+      </div>
+      <div class="report__chart">
+        <canvas class="report__chart-canvas" id="radarChart"></canvas>
+      </div>
+      <div class="report__history">
+        <h3 class="report__history-title">History Check</h3>
+        <table class="report__history-table">
+          <thead>
+            <tr>
+              <th>Attempt</th>
+              <th>Pronunciation</th>
+              <th>Grammar</th>
+              <th>Fluency</th>
+              <th>Average</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+      <!-- 인쇄용 코멘트 섹션 (상세보기 내용 자동 입력) -->
+      <div class="report__comments" id="reportComments">
+        <h3 class="report__comments-title">Detailed Comments</h3>
+        <div id="reportCommentsBody"></div>
+      </div>
+      <div class="report__actions">
+        <button class="btn btn--print" id="btnPrintReport" type="button" onclick="printReport()">🖨️ 인쇄 / PDF 저장</button>
+        <button class="btn btn--primary" id="btnRestart" type="button">처음부터 다시 연습하기</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== 상세 피드백 모달 ===== -->
+  <div class="modal" id="feedbackModal">
+    <div class="modal__content">
+      <div class="modal__header">
+        <h2 class="modal__title">상세 피드백 (Detailed Feedback)</h2>
+        <button class="modal__close" id="btnCloseModal">✕</button>
+      </div>
+      <div class="modal__body">
+        <div class="modal__section-title">Score Analysis</div>
+        <div class="modal__score-bar">
+          <div class="modal__score-item">
+            <span class="modal__score-label">Pronunciation</span>
+            <span class="modal__score-value" id="modalScorePronunciation">0.0</span>
+          </div>
+          <div class="modal__score-item">
+            <span class="modal__score-label">Grammar</span>
+            <span class="modal__score-value" id="modalScoreGrammar">0.0</span>
+          </div>
+          <div class="modal__score-item">
+            <span class="modal__score-label">Fluency</span>
+            <span class="modal__score-value" id="modalScoreFluency">0.0</span>
+          </div>
+        </div>
+        <div class="modal__section-title">Speech Analysis</div>
+        <div class="modal__text-box modal__text-box--original">
+          <span class="feedback__label">YOU SAID:</span>
+          <span id="modalOriginalText"></span>
+        </div>
+        <div class="modal__text-box modal__text-box--corrected">
+          <span class="feedback__label">CORRECTED:</span>
+          <span id="modalCorrectedText"></span>
+        </div>
+        <div class="modal__section-title">Grammar & Errors</div>
+        <div id="modalErrorList"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--listen" id="btnPlayCorrectedModal">🔊 교정된 문장 듣기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer" role="contentinfo">
+    <div>Mangoi Speech Coach &copy; 2026 - AI Powered Learning</div>
+  </footer>
+
+  <!-- ===== 마스코트 비디오 (레트로 TV) ===== -->
+  <div class="mascot-wrap">
+    <div class="retro-tv">
+      <div class="retro-tv__antenna">
+        <div class="retro-tv__antenna-left"></div>
+        <div class="retro-tv__antenna-right"></div>
+        <div class="retro-tv__antenna-base"></div>
+      </div>
+      <div class="retro-tv__screen">
+        <video id="mascotVideo" class="mascot-video" autoplay loop muted playsinline>
+          <source src="https://navy111p-sudo.github.io/mangoi_Speech/%EB%A7%9D%EA%B3%A0%EC%95%84%EC%9D%B4_%EC%9A%B0%EC%A3%BC_%EC%9D%8C%EC%84%B1_%EC%98%81%EC%83%81_%EC%83%9D%EC%84%B1.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="retro-tv__panel">
+        <button class="mascot-sound-btn" id="mascotSoundBtn" type="button">소리 켜기</button>
+      </div>
+      <div class="retro-tv__legs">
+        <div class="retro-tv__leg"></div>
+        <div class="retro-tv__leg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 카카오톡 상담 ===== -->
+  <a class="kakao-chat-btn" href="https://pf.kakao.com/_xnxaxfxj/chat" target="_blank" rel="noopener">
+    <svg class="kakao-chat-btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 3C6.477 3 2 6.463 2 10.714c0 2.738 1.823 5.137 4.564 6.476-.145.53-.936 3.41-.968 3.61 0 0-.02.166.088.23.108.063.235.03.235.03.31-.043 3.595-2.356 4.16-2.774.62.09 1.26.137 1.921.137 5.523 0 10-3.463 10-7.714C22 6.463 17.523 3 12 3z"/>
+    </svg>
+    <span>카톡상담</span>
+  </a>
+
+  <!-- ===== Scripts ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/sentences.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
+
+  <!-- 마스코트 비디오 소리 토글 -->
+  <script>
+  (function () {
+    var mv = document.getElementById("mascotVideo");
+    var btn = document.getElementById("mascotSoundBtn");
+    if (!mv || !btn) return;
+    function handlePlayToggle(e) {
+      e.preventDefault();
+      if (mv.paused) {
+        mv.currentTime = 0;
+        mv.muted = false;
+        var playPromise = mv.play();
+        if (playPromise !== undefined) {
+          playPromise.then(function () {
+            btn.textContent = "소리 끄기";
+          }).catch(function (error) {
+            console.warn("재생 실패:", error);
+            mv.muted = true;
+            mv.play();
+            btn.textContent = "소리 끄기 (음소거)";
+          });
+        } else {
+          btn.textContent = "소리 끄기";
+        }
+      } else {
+        mv.pause();
+        mv.currentTime = 0;
+        btn.textContent = "소리 켜기";
+      }
+    }
+    if (btn.addEventListener) {
+      btn.addEventListener("click", handlePlayToggle, false);
+      btn.addEventListener("touchend", handlePlayToggle, false);
+    } else if (btn.attachEvent) {
+      btn.attachEvent("onclick", handlePlayToggle);
+    }
+    if (mv.addEventListener) { mv.addEventListener("ended", function () {
+      mv.pause();
+      mv.currentTime = 0;
+      btn.textContent = "소리 켜기";
+    }, false); }
+  })();
+  </script>
+
+</body>
+</html>
