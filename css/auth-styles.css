@@ -1,0 +1,54 @@
+/* Auth UI Styles - mangoi_Speech */
+
+.auth-section { max-width: 420px; margin: 2rem auto; padding: 0 1rem; }
+.auth-container { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; backdrop-filter: blur(10px); }
+.auth-header { text-align: center; margin-bottom: 1.5rem; }
+.auth-title { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0 0 0.5rem 0; }
+.auth-subtitle { font-size: 0.875rem; color: #94A3B8; margin: 0; }
+
+.auth-tabs { display: flex; gap: 0; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 4px; }
+.auth-tab { flex: 1; padding: 0.6rem 1rem; border: none; background: transparent; color: #94A3B8; font-size: 0.875rem; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+.auth-tab.is-active { background: #4F46E5; color: #fff; }
+.auth-tab:hover:not(.is-active) { color: #E2E8F0; }
+
+.auth-form { display: flex; flex-direction: column; gap: 1rem; }
+.auth-field { display: flex; flex-direction: column; gap: 0.375rem; }
+.auth-field label { font-size: 0.8125rem; font-weight: 600; color: #CBD5E1; }
+.auth-field input { padding: 0.75rem 1rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; font-size: 0.9375rem; transition: border-color 0.2s; outline: none; font-family: inherit; }
+.auth-field input::placeholder { color: #64748B; }
+.auth-field input:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79,70,229,0.2); }
+
+.auth-error { font-size: 0.8125rem; color: #EF4444; min-height: 1.2rem; transition: color 0.3s; }
+
+.auth-btn { padding: 0.75rem 1rem; border: none; border-radius: 8px; font-size: 0.9375rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.auth-btn--primary { background: #4F46E5; color: #fff; }
+.auth-btn--primary:hover { background: #4338CA; transform: translateY(-1px); }
+.auth-btn--primary:active { transform: translateY(0); }
+.auth-btn--google { background: #fff; color: #1F2937; border: 1px solid #E5E7EB; }
+.auth-btn--google:hover { background: #F9FAFB; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.auth-btn--ghost { background: transparent; color: #94A3B8; border: 1px solid rgba(255,255,255,0.1); }
+.auth-btn--ghost:hover { color: #E2E8F0; border-color: rgba(255,255,255,0.2); }
+.auth-btn--link { background: transparent; color: #818CF8; font-size: 0.8125rem; padding: 0.25rem; }
+.auth-btn--link:hover { color: #A5B4FC; text-decoration: underline; }
+
+.auth-divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+.auth-divider span { font-size: 0.75rem; color: #64748B; }
+
+.user-info-bar { display: flex; align-items: center; justify-content: space-between; max-width: 800px; margin: 0 auto 1rem; padding: 0.5rem 1rem; background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.2); border-radius: 12px; }
+.user-info-left { display: flex; align-items: center; gap: 0.5rem; }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.user-name { font-size: 0.875rem; font-weight: 600; color: #E2E8F0; }
+.user-info-right { display: flex; align-items: center; gap: 0.5rem; }
+.user-info-btn { padding: 0.375rem 0.75rem; border: none; background: rgba(255,255,255,0.08); color: #CBD5E1; font-size: 0.8125rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.user-info-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+#btnInstallApp { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 0.75rem 1.5rem; background: #4F46E5; color: #fff; border: none; border-radius: 50px; font-size: 0.9375rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(79,70,229,0.4); z-index: 1000; transition: all 0.3s; font-family: inherit; }
+#btnInstallApp:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 6px 25px rgba(79,70,229,0.5); }
+#saveNotification { display: none; }
+
+@media (max-width: 480px) {
+  .auth-container { padding: 1.5rem; }
+  .auth-title { font-size: 1.25rem; }
+  .user-info-bar { margin: 0 0.5rem 1rem; padding: 0.5rem 0.75rem; }
+}
