@@ -266,18 +266,31 @@ function init() {
 }
 
 /**
- * 레벨 선택 드롭다운 초기화
+ * 레벨 선택 초기화 (BTS + SIU + Phonics)
  */
 function initLevelSelect() {
   if (!DOM.levelSelect) return;
-  var keys = Object.keys(BTS_SENTENCES);
-  for (var k = 0; k < keys.length; k++) {
-    var key = keys[k];
-    var level = BTS_SENTENCES[key];
-    var option = document.createElement("option");
-    option.value = key;
-    option.textContent = key + " - " + level.title;
-    DOM.levelSelect.appendChild(option);
+  var allSets = [
+    {name: "BTS", data: typeof BTS_SENTENCES !== "undefined" ? BTS_SENTENCES : {}},
+    {name: "SIU Basic", data: typeof SIU_BASIC_SENTENCES !== "undefined" ? SIU_BASIC_SENTENCES : {}},
+    {name: "SIU Advance", data: typeof SIU_ADVANCE_SENTENCES !== "undefined" ? SIU_ADVANCE_SENTENCES : {}},
+    {name: "Phonics", data: typeof PHONICS_SENTENCES !== "undefined" ? PHONICS_SENTENCES : {}}
+  ];
+  for (var s = 0; s < allSets.length; s++) {
+    var setData = allSets[s];
+    var keys = Object.keys(setData.data);
+    if (keys.length === 0) continue;
+    var optgroup = document.createElement("optgroup");
+    optgroup.label = setData.name;
+    for (var k = 0; k < keys.length; k++) {
+      var key = keys[k];
+      var level = setData.data[key];
+      var option = document.createElement("option");
+      option.value = key;
+      option.textContent = key + " - " + level.title;
+      optgroup.appendChild(option);
+    }
+    DOM.levelSelect.appendChild(optgroup);
   }
   addEvent(DOM.levelSelect, "change", handleLevelChange);
   DOM.levelSelect.value = "BTS 1";
@@ -285,19 +298,30 @@ function initLevelSelect() {
 }
 
 /**
+ * 문장 데이터 찾기 (BTS, SIU, Phonics 모두 검색)
+ */
+function findSentenceData(key) {
+  if (typeof BTS_SENTENCES !== "undefined" && BTS_SENTENCES[key]) return BTS_SENTENCES[key];
+  if (typeof SIU_BASIC_SENTENCES !== "undefined" && SIU_BASIC_SENTENCES[key]) return SIU_BASIC_SENTENCES[key];
+  if (typeof SIU_ADVANCE_SENTENCES !== "undefined" && SIU_ADVANCE_SENTENCES[key]) return SIU_ADVANCE_SENTENCES[key];
+  if (typeof PHONICS_SENTENCES !== "undefined" && PHONICS_SENTENCES[key]) return PHONICS_SENTENCES[key];
+  return null;
+}
+
+/**
  * 레벨 변경 처리
  */
 function handleLevelChange() {
   var selectedKey = DOM.levelSelect ? DOM.levelSelect.value : "";
-  if (!selectedKey || !BTS_SENTENCES[selectedKey]) {
+  var level = selectedKey ? findSentenceData(selectedKey) : null;
+  if (!level) {
     currentLevelKey = null;
     currentLevelSentences = ALL_SENTENCES;
     if (DOM.levelInfo) {
-      DOM.levelInfo.textContent = "전체 BTS 레벨에서 랜덤 출제";
+      DOM.levelInfo.textContent = "전체 BTS 문장 (" + ALL_SENTENCES.length + "문장)";
     }
   } else {
     currentLevelKey = selectedKey;
-    var level = BTS_SENTENCES[selectedKey];
     currentLevelSentences = level.sentences;
     if (DOM.levelInfo) {
       DOM.levelInfo.textContent = level.topic + " (" + level.sentences.length + "문장)";
@@ -307,18 +331,15 @@ function handleLevelChange() {
     Math.floor(Math.random() * currentLevelSentences.length)
   ];
   state.currentSentence = randomSentence;
-  if (DOM.targetSentence) DOM.targetSentence.textContent = randomSentence;
   state.currentAttempt = 1;
   state.attempts = [];
   state.isRecording = false;
   updateAttemptUI();
   if (DOM.feedbackSection) DOM.feedbackSection.classList.remove("is-visible");
   if (DOM.reportSection) DOM.reportSection.classList.remove("is-visible");
-  if (DOM.btnNextAttempt) DOM.btnNextAttempt.style.display = "none";
-  if (DOM.recognizedText) {
-    DOM.recognizedText.textContent = "마이크 버튼을 누르고 영어로 말해보세요";
-    DOM.recognizedText.classList.add("recorder__text--empty");
-  }
+  if (DOM.btnNextAttempt) DOM.btnNextAttempt.classList.remove("is-visible");
+  if (DOM.targetText) DOM.targetText.textContent = state.currentSentence;
+  if (DOM.recognizedText) DOM.recognizedText.textContent = "";
 }
 
 /**
