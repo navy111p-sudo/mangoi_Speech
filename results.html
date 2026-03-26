@@ -9,188 +9,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Poppins', sans-serif; min-height: 100vh;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            display: flex; flex-direction: column; align-items: center;
-            overflow-y: auto; position: relative;
-        }
-        .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; animation: floatOrb 8s ease-in-out infinite; z-index: 0; }
-        .bg-orb:nth-child(1) { width: 350px; height: 350px; background: linear-gradient(135deg, #ff9ff3, #f368e0); top: -80px; left: -80px; }
-        .bg-orb:nth-child(2) { width: 300px; height: 300px; background: linear-gradient(135deg, #feca57, #ff6b6b); bottom: -60px; right: -60px; animation-delay: -4s; }
-        @keyframes floatOrb { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(20px,-20px) scale(1.05); } 66% { transform: translate(-15px,15px) scale(0.95); } }
-        .container { position: relative; z-index: 10; text-align: center; padding: 30px 20px 60px; max-width: 500px; width: 100%; }
-        .back-link { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem; margin-bottom: 24px; transition: color 0.3s; }
-        .back-link:hover { color: rgba(255,255,255,0.8); }
-        .logo-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #ff9ff3, #f368e0); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 32px rgba(255,159,243,0.3); margin-bottom: 16px; }
-        .title { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
-        .subtitle { color: rgba(255,255,255,0.5); font-size: 0.85rem; font-weight: 300; margin-bottom: 32px; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-        .stat-card { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 20px 16px; }
-        .stat-value { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
-        .stat-card:nth-child(1) .stat-value { background: linear-gradient(135deg, #feca57, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .stat-card:nth-child(2) .stat-value { background: linear-gradient(135deg, #48dbfb, #0abde3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .stat-card:nth-child(3) .stat-value { background: linear-gradient(135deg, #ff9ff3, #f368e0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .stat-card:nth-child(4) .stat-value { background: linear-gradient(135deg, #55efc4, #00b894); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .stat-label { color: rgba(255,255,255,0.45); font-size: 0.75rem; font-weight: 400; }
-        .section-title { color: rgba(255,255,255,0.7); font-size: 0.9rem; font-weight: 600; text-align: left; margin-bottom: 12px; }
-        /* Chart Styles */
-        .chart-card { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 24px 20px; margin-bottom: 24px; }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .chart-title { color: #fff; font-size: 0.95rem; font-weight: 600; }
-        .chart-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.06); border-radius: 10px; padding: 3px; }
-        .chart-tab { padding: 5px 12px; border-radius: 8px; border: none; background: transparent; color: rgba(255,255,255,0.4); font-size: 0.7rem; font-family: 'Poppins', sans-serif; cursor: pointer; transition: all 0.3s; }
-        .chart-tab.active { background: rgba(255,255,255,0.12); color: #fff; }
-        .chart-tab:hover { color: rgba(255,255,255,0.7); }
-        .bar-chart { display: flex; align-items: flex-end; justify-content: space-between; height: 160px; gap: 8px; padding-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); position: relative; }
-        .bar-chart::before { content: '100'; position: absolute; top: 0; left: -4px; color: rgba(255,255,255,0.2); font-size: 0.6rem; }
-        .bar-chart::after { content: '0'; position: absolute; bottom: -2px; left: -4px; color: rgba(255,255,255,0.2); font-size: 0.6rem; transform: translateY(100%); }
-        .chart-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 8px; }
-        .chart-bar { width: 100%; max-width: 36px; border-radius: 8px 8px 2px 2px; min-height: 4px; transition: height 1s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; }
-        .chart-bar:hover { filter: brightness(1.2); transform: scaleX(1.1); }
-        .chart-bar:hover::after { content: attr(data-value); position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; white-space: nowrap; }
-        .bar-1 { background: linear-gradient(180deg, #feca57, #ff6b6b); height: 72%; }
-        .bar-2 { background: linear-gradient(180deg, #48dbfb, #0abde3); height: 85%; }
-        .bar-3 { background: linear-gradient(180deg, #ff9ff3, #f368e0); height: 60%; }
-        .bar-4 { background: linear-gradient(180deg, #55efc4, #00b894); height: 92%; }
-        .bar-5 { background: linear-gradient(180deg, #feca57, #ff6b6b); height: 45%; }
-        .bar-6 { background: linear-gradient(180deg, #48dbfb, #0abde3); height: 78%; }
-        .bar-7 { background: linear-gradient(180deg, #ff9ff3, #f368e0); height: 88%; }
-        .chart-label { color: rgba(255,255,255,0.35); font-size: 0.65rem; }
-        /* Line chart */
-        .line-chart-container { position: relative; height: 160px; margin-top: 24px; }
-        .line-chart-svg { width: 100%; height: 100%; }
-        .chart-grid-line { stroke: rgba(255,255,255,0.06); stroke-width: 1; }
-        .chart-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-        .chart-line-accent { stroke: url(#lineGradient); }
-        .chart-area { fill: url(#areaGradient); }
-        .chart-dot { fill: #fff; stroke-width: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
-        .chart-dot:hover { r: 6; }
-        .line-chart-labels { display: flex; justify-content: space-between; margin-top: 8px; }
-        .line-chart-labels span { color: rgba(255,255,255,0.35); font-size: 0.65rem; }
-        /* Donut chart */
-        .donut-section { display: flex; gap: 20px; align-items: center; margin-top: 24px; }
-        .donut-chart { width: 120px; height: 120px; flex-shrink: 0; }
-        .donut-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 12; }
-        .donut-segment { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-        .donut-center-text { fill: #fff; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.2rem; }
-        .donut-center-label { fill: rgba(255,255,255,0.4); font-family: 'Poppins', sans-serif; font-size: 0.5rem; }
-        .donut-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
-        .legend-item { display: flex; align-items: center; gap: 10px; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
-        .legend-text { color: rgba(255,255,255,0.6); font-size: 0.75rem; }
-        .legend-value { color: #fff; font-size: 0.75rem; font-weight: 600; margin-left: auto; }
-        /* History */
-        .history-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
-        .history-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; }
-        .history-score { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0; }
-        .score-high { background: linear-gradient(135deg, #55efc4, #00b894); }
-        .score-mid { background: linear-gradient(135deg, #feca57, #ff6b6b); }
-        .score-low { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
-        .history-info { text-align: left; flex: 1; }
-        .history-topic { color: #fff; font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
-        .history-date { color: rgba(255,255,255,0.35); font-size: 0.75rem; }
-        .start-btn { display: inline-block; margin-top: 8px; padding: 14px 32px; background: linear-gradient(135deg, #ff9ff3, #f368e0); border: none; border-radius: 14px; color: #fff; font-size: 0.95rem; font-weight: 600; font-family: 'Poppins', sans-serif; cursor: pointer; text-decoration: none; transition: all 0.3s; }
-        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,159,243,0.35); }
-        .container { opacity: 0; animation: fadeIn 0.6s ease forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
-        @media (max-width: 480px) { .title { font-size: 1.3rem; } .stat-value { font-size: 1.5rem; } .donut-section { flex-direction: column; align-items: center; } }
-    </style>
-</head>
-<body>
-    <div class="bg-orb"></div>
-    <div class="bg-orb"></div>
-    <div class="container">
-        <a href="index.html" class="back-link">← 대시보드로 돌아가기</a>
-        <div class="logo-icon">📊</div>
-        <h1 class="title">결과 보기</h1>
-        <p class="subtitle">학습 기록과 성적을 확인하세요</p>
-
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">총 연습 횟수</div></div>
-            <div class="stat-card"><div class="stat-value">78점</div><div class="stat-label">평균 점수</div></div>
-            <div class="stat-card"><div class="stat-value">45분</div><div class="stat-label">총 학습 시간</div></div>
-            <div class="stat-card"><div class="stat-value">5일</div><div class="stat-label">연속 학습</div></div>
-        </div>
-
-        <!-- Weekly Score Bar Chart -->
-        <div class="chart-card">
-            <div class="chart-header">
-                <span class="chart-title">주간 점수 추이</span>
-                <div class="chart-tabs">
-                    <button class="chart-tab active">1주</button>
-                    <button class="chart-tab">1개월</button>
-                    <button class="chart-tab">전체</button>
-                </div>
-            </div>
-            <div class="bar-chart">
-                <div class="chart-bar-group"><div class="chart-bar bar-1" data-value="72점"></div><span class="chart-label">월</span></div>
-                <div class="chart-bar-group"><div class="chart-bar bar-2" data-value="85점"></div><span class="chart-label">화</span></div>
-                <div class="chart-bar-group"><div class="chart-bar bar-3" data-value="60점"></div><span class="chart-label">수</span></div>
-                <div class="chart-bar-group"><div class="chart-bar bar-4" data-value="92점"></div><span class="chart-label">목</span></div>
-                <div class="chart-bar-group"><div class="chart-bar bar-5" data-value="45점"></div><span class="chart-label">금</span></div>
-                <div class="chart-bar-group"><div class="chart-bar bar-6" data-value="78점"></div><span class="chart-label">토</span></div>
-                <div class="chart-bar-group"><div class="chart-bar bar-7" data-value="88점"></div><span class="chart-label">일</span></div>
-            </div>
-        </div>
-
-        <!-- Progress Line Chart -->
-        <div class="chart-card">
-            <div class="chart-header">
-                <span class="chart-title">실력 성장 그래프</span>
-            </div>
-            <div class="line-chart-container">
-                <svg class="line-chart-svg" viewBox="0 0 400 160" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#ff9ff3"/>
-                            <stop offset="50%" style="stop-color:#48dbfb"/>
-                            <stop offset="100%" style="stop-color:#55efc4"/>
-                        </linearGradient>
-                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#48dbfb;stop-opacity:0.2"/>
-                            <stop offset="100%" style="stop-color:#48dbfb;stop-opacity:0"/>
-                        </linearGradient>
-                    </defs>
-                    <line class="chart-grid-line" x1="0" y1="40" x2="400" y2="40"/>
-                    <line class="chart-grid-line" x1="0" y1="80" x2="400" y2="80"/>
-                    <line class="chart-grid-line" x1="0" y1="120" x2="400" y2="120"/>
-                    <path class="chart-area" d="M0,130 L57,110 L114,100 L171,80 L228,70 L285,45 L342,35 L400,20 L400,160 L0,160 Z"/>
-                    <path class="chart-line chart-line-accent" d="M0,130 L57,110 L114,100 L171,80 L228,70 L285,45 L342,35 L400,20"/>
-                    <circle class="chart-dot" cx="0" cy="130" r="4" stroke="#ff9ff3"/>
-                    <circle class="chart-dot" cx="57" cy="110" r="4" stroke="#ff9ff3"/>
-                    <circle class="chart-dot" cx="114" cy="100" r="4" stroke="#f368e0"/>
-                    <circle class="chart-dot" cx="171" cy="80" r="4" stroke="#48dbfb"/>
-                    <circle class="chart-dot" cx="228" cy="70" r="4" stroke="#48dbfb"/>
-                    <circle class="chart-dot" cx="285" cy="45" r="4" stroke="#0abde3"/>
-                    <circle class="chart-dot" cx="342" cy="35" r="4" stroke="#55efc4"/>
-                    <circle class="chart-dot" cx="400" cy="20" r="4" stroke="#55efc4"/>
-                </svg>
-            </div>
-            <div class="line-chart-labels">
-                <span>1주차</span><span>2주차</span><span>3주차</span><span>4주차</span>
-            </div>
-        </div>
-
-        <!-- Category Donut Chart -->
-        <div class="chart-card">
-            <div class="chart-header">
-                <span class="chart-title">영역별 성취도</span>
-            </div>
-            <div class="donut-section">
-                <svg class="donut-chart" viewBox="0 0 120 120">
-                    <circle class="donut-bg" cx="60" cy="60" r="48"/>
-                    <circle class="donut-segment" cx="60" cy="60" r="48" stroke="#55efc4" stroke-dasharray="90 211" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mangoi Speaking Practice - 결과 보기</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192x192.png">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; min-height: 100vh; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); display: flex; flex-direction: column; align-items: center; overflow-y: auto; position: relative; }
         .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; animation: floatOrb 8s ease-in-out infinite; z-index: 0; }
         .bg-orb:nth-child(1) { width: 350px; height: 350px; background: linear-gradient(135deg, #ff9ff3, #f368e0); top: -80px; left: -80px; }
@@ -217,7 +35,6 @@
         .chart-tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.06); border-radius: 10px; padding: 3px; }
         .chart-tab { padding: 5px 12px; border-radius: 8px; border: none; background: transparent; color: rgba(255,255,255,0.4); font-size: 0.7rem; font-family: 'Poppins',sans-serif; cursor: pointer; transition: all 0.3s; }
         .chart-tab.active { background: rgba(255,255,255,0.12); color: #fff; }
-        /* Bar chart */
         .bar-chart { display: flex; align-items: flex-end; justify-content: space-between; height: 150px; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .chart-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 8px; }
         .chart-bar { width: 100%; max-width: 36px; border-radius: 8px 8px 2px 2px; min-height: 4px; position: relative; cursor: pointer; transition: all 0.3s; }
@@ -226,7 +43,6 @@
         .chart-bar:hover::after { opacity: 1; }
         .bar-1{background:linear-gradient(180deg,#feca57,#ff6b6b);height:72%} .bar-2{background:linear-gradient(180deg,#48dbfb,#0abde3);height:85%} .bar-3{background:linear-gradient(180deg,#ff9ff3,#f368e0);height:60%} .bar-4{background:linear-gradient(180deg,#55efc4,#00b894);height:92%} .bar-5{background:linear-gradient(180deg,#feca57,#ff6b6b);height:45%} .bar-6{background:linear-gradient(180deg,#48dbfb,#0abde3);height:78%} .bar-7{background:linear-gradient(180deg,#ff9ff3,#f368e0);height:88%}
         .chart-label { color: rgba(255,255,255,0.35); font-size: 0.65rem; }
-        /* Radar chart */
         .radar-wrap { display: flex; flex-direction: column; align-items: center; }
         .radar-svg { width: 260px; height: 240px; }
         .radar-grid { stroke: rgba(255,255,255,0.08); fill: none; stroke-width: 1; }
@@ -235,7 +51,6 @@
         .radar-dot { fill: #fff; stroke-width: 2; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
         .radar-label { fill: rgba(255,255,255,0.7); font-family: 'Poppins',sans-serif; font-size: 12px; font-weight: 600; }
         .radar-value { fill: rgba(255,255,255,0.45); font-family: 'Poppins',sans-serif; font-size: 10px; }
-        /* Comments */
         .comment-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; width: 100%; }
         .comment-item { display: flex; align-items: flex-start; gap: 12px; background: rgba(255,255,255,0.04); border-radius: 14px; padding: 14px 16px; text-align: left; }
         .comment-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
@@ -248,7 +63,6 @@
         .comment-score.high { color: #55efc4; }
         .comment-score.mid { color: #feca57; }
         .comment-score.low { color: #ff6b6b; }
-        /* History */
         .history-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
         .history-item { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; }
         .history-score { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0; }
@@ -280,7 +94,7 @@
             <div class="stat-card"><div class="stat-value">5일</div><div class="stat-label">연속 학습</div></div>
         </div>
 
-        <!-- Radar Chart: 발음 / 문법 / 유창성 -->
+        <!-- Radar Chart -->
         <div class="chart-card">
             <div class="chart-header"><span class="chart-title">영역별 실력 분석</span></div>
             <div class="radar-wrap">
@@ -296,23 +110,18 @@
                             <stop offset="100%" style="stop-color:#ff9ff3"/>
                         </linearGradient>
                     </defs>
-                    <!-- Grid levels (20%, 40%, 60%, 80%, 100%) -->
                     <polygon class="radar-grid" points="150,110 184,130 184,170 150,190 116,170 116,130"/>
                     <polygon class="radar-grid" points="150,90 198,120 198,180 150,210 102,180 102,120"/>
                     <polygon class="radar-grid" points="150,70 212,110 212,190 150,230 88,190 88,110"/>
                     <polygon class="radar-grid" points="150,50 226,100 226,200 150,250 74,200 74,100"/>
                     <polygon class="radar-grid" points="150,30 240,90 240,210 150,270 60,210 60,90"/>
-                    <!-- Axes -->
                     <line class="radar-axis" x1="150" y1="150" x2="150" y2="30"/>
                     <line class="radar-axis" x1="150" y1="150" x2="240" y2="210"/>
                     <line class="radar-axis" x1="150" y1="150" x2="60" y2="210"/>
-                    <!-- Data area: 발음 85%, 문법 68%, 유창성 72% -->
-                    <polygon class="radar-area" id="radarData" points="150,48 222,196 78,188"/>
-                    <!-- Data dots -->
+                    <polygon class="radar-area" points="150,48 222,196 78,188"/>
                     <circle class="radar-dot" cx="150" cy="48" r="5" stroke="#55efc4"/>
                     <circle class="radar-dot" cx="222" cy="196" r="5" stroke="#feca57"/>
                     <circle class="radar-dot" cx="78" cy="188" r="5" stroke="#48dbfb"/>
-                    <!-- Labels -->
                     <text class="radar-label" x="150" y="18" text-anchor="middle">발음</text>
                     <text class="radar-value" x="150" y="42" text-anchor="middle">85%</text>
                     <text class="radar-label" x="255" y="220" text-anchor="start">문법</text>
@@ -320,8 +129,6 @@
                     <text class="radar-label" x="45" y="220" text-anchor="end">유창성</text>
                     <text class="radar-value" x="45" y="236" text-anchor="end">72%</text>
                 </svg>
-
-                <!-- Auto Comments -->
                 <div class="comment-list">
                     <div class="comment-item">
                         <div class="comment-icon pronunciation">🎤</div>
@@ -356,7 +163,7 @@
             <div class="chart-header">
                 <span class="chart-title">주간 점수 추이</span>
                 <div class="chart-tabs">
-                    <button class="chart-tab active">1주</button>
+                    <button class="chart-tab active">1�+�</button>
                     <button class="chart-tab">1개월</button>
                     <button class="chart-tab">전체</button>
                 </div>
