@@ -1,1 +1,98 @@
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mangoi Speaking Practice</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192x192.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; position: relative;
+        }
+        .bg-orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+            animation: floatOrb 8s ease-in-out infinite;
+        }
+        .bg-orb:nth-child(1) { width: 400px; height: 400px; background: linear-gradient(135deg, #ff6b6b, #feca57); top: -100px; left: -100px; }
+        .bg-orb:nth-child(2) { width: 350px; height: 350px; background: linear-gradient(135deg, #48dbfb, #0abde3); bottom: -80px; right: -80px; animation-delay: -3s; }
+        .bg-orb:nth-child(3) { width: 300px; height: 300px; background: linear-gradient(135deg, #ff9ff3, #f368e0); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -5s; }
+        @keyframes floatOrb { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-30px) scale(1.05); } 66% { transform: translate(-20px,20px) scale(0.95); } }
+        .container { position: relative; z-index: 10; text-align: center; padding: 20px; max-width: 500px; width: 100%; }
+        .logo { margin-bottom: 10px; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 8px 32px rgba(254,202,87,0.3); } 50% { box-shadow: 0 8px 48px rgba(254,202,87,0.5); } }
+        .title { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #feca57, #ff6b6b, #ff9ff3, #48dbfb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 16px 0 6px; }
+        .subtitle { color: rgba(255,255,255,0.5); font-size: 0.9rem; font-weight: 300; margin-bottom: 40px; }
+        .menu-grid { display: flex; flex-direction: column; gap: 16px; }
+        .menu-card { position: relative; background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px 28px; display: flex; align-items: center; gap: 20px; cursor: pointer; transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94); text-decoration: none; overflow: hidden; }
+        .menu-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 20px; opacity: 0; transition: opacity 0.4s ease; }
+        .menu-card:nth-child(1)::before { background: linear-gradient(135deg, rgba(72,219,251,0.15), rgba(10,189,227,0.05)); }
+        .menu-card:nth-child(2)::before { background: linear-gradient(135deg, rgba(254,202,87,0.15), rgba(255,107,107,0.05)); }
+        .menu-card:nth-child(3)::before { background: linear-gradient(135deg, rgba(255,159,243,0.15), rgba(243,104,224,0.05)); }
+        .menu-card:hover::before { opacity: 1; }
+        .menu-card:hover { transform: translateY(-4px) scale(1.02); border-color: rgba(255,255,255,0.2); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+        .menu-card:active { transform: translateY(-1px) scale(0.99); }
+        .card-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; position: relative; z-index: 1; }
+        .menu-card:nth-child(1) .card-icon { background: linear-gradient(135deg, #48dbfb, #0abde3); box-shadow: 0 4px 20px rgba(72,219,251,0.3); }
+        .menu-card:nth-child(2) .card-icon { background: linear-gradient(135deg, #feca57, #ff6b6b); box-shadow: 0 4px 20px rgba(254,202,87,0.3); }
+        .menu-card:nth-child(3) .card-icon { background: linear-gradient(135deg, #ff9ff3, #f368e0); box-shadow: 0 4px 20px rgba(255,159,243,0.3); }
+        .card-content { text-align: left; position: relative; z-index: 1; }
+        .card-title { color: #fff; font-size: 1.15rem; font-weight: 600; margin-bottom: 4px; }
+        .card-desc { color: rgba(255,255,255,0.45); font-size: 0.8rem; font-weight: 300; }
+        .card-arrow { margin-left: auto; color: rgba(255,255,255,0.25); font-size: 1.2rem; transition: all 0.3s ease; position: relative; z-index: 1; }
+        .menu-card:hover .card-arrow { color: rgba(255,255,255,0.7); transform: translateX(4px); }
+        .footer { margin-top: 48px; color: rgba(255,255,255,0.25); font-size: 0.75rem; font-weight: 300; }
+        @media (max-width: 480px) { .title { font-size: 1.6rem; } .menu-card { padding: 20px 22px; } .card-icon { width: 48px; height: 48px; font-size: 22px; border-radius: 14px; } }
+        .menu-card { opacity: 0; transform: translateY(20px); animation: slideUp 0.6s ease forwards; }
+        .menu-card:nth-child(1) { animation-delay: 0.1s; }
+        .menu-card:nth-child(2) { animation-delay: 0.25s; }
+        .menu-card:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        .logo, .title, .subtitle { opacity: 0; animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="bg-orb"></div>
+    <div class="bg-orb"></div>
+    <div class="bg-orb"></div>
+    <div class="container">
+        <div class="logo"></div>
+        <h1 class="title">Mangoi Speaking Practice</h1>
+        <p class="subtitle">AI 기반 영어 스피킹 연습 플랫폼</p>
+        <div class="menu-grid">
+            <a href="login.html" class="menu-card">
+                <div class="card-icon">👤</div>
+                <div class="card-content">
+                    <div class="card-title">로그인</div>
+                    <div class="card-desc">계정에 로그인하여 학습을 시작하세요</div>
+                </div>
+                <div class="card-arrow">→</div>
+            </a>
+            <a href="practice.html" class="menu-card">
+                <div class="card-icon">🎙️</div>
+                <div class="card-content">
+                    <div class="card-title">스피킹 연습</div>
+                    <div class="card-desc">AI와 함께 영어 발음과 문장을 연습해요</div>
+                </div>
+                <div class="card-arrow">→</div>
+            </a>
+            <a href="results.html" class="menu-card">
+                <div class="card-icon">📊</div>
+                <div class="card-content">
+                    <div class="card-title">결과 보기</div>
+                    <div class="card-desc">학습 기록과 성적을 확인하세요</div>
+                </div>
+                <div class="card-arrow">→</div>
+            </a>
+        </div>
+        <div class="footer">© 2026 Mangoi Speaking Practice. All rights reserved.</div>
+    </div>
+</body>
+</html>
