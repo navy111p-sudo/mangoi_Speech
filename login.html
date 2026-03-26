@@ -38,6 +38,10 @@
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
         .google-btn { width: 100%; padding: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; color: #fff; font-size: 0.9rem; font-weight: 400; font-family: 'Poppins', sans-serif; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .google-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+        .kakao-btn { width: 100%; padding: 14px; background: #FEE500; border: none; border-radius: 14px; color: #191919; font-size: 0.9rem; font-weight: 500; font-family: 'Poppins',sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; margin-top: 10px; }
+        .kakao-btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
+        .naver-btn { width: 100%; padding: 14px; background: #03C75A; border: none; border-radius: 14px; color: #fff; font-size: 0.9rem; font-weight: 500; font-family: 'Poppins',sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; margin-top: 10px; }
+        .naver-btn:hover { filter: brightness(0.9); transform: translateY(-1px); }
         .signup-text { margin-top: 24px; color: rgba(255,255,255,0.4); font-size: 0.8rem; }
         .signup-text a { color: #48dbfb; text-decoration: none; font-weight: 500; }
         .signup-text a:hover { text-decoration: underline; }
@@ -70,6 +74,14 @@
             <button class="google-btn" onclick="alert('Google 로그인은 준비 중입니다!');">
                 <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
                 Google로 로그인
+            </button>
+            <button class="kakao-btn" type="button">
+                <svg width="20" height="20" viewBox="0 0 20 20"><path fill="#191919" d="M10 3C5.58 3 2 5.87 2 9.32c0 2.17 1.42 4.08 3.58 5.18l-.91 3.38c-.08.29.26.52.5.34l3.96-2.62c.28.03.57.05.87.05 4.42 0 8-2.87 8-6.33S14.42 3 10 3z"/></svg>
+                카카오로 로그인
+            </button>
+            <button class="naver-btn" type="button">
+                <svg width="20" height="20" viewBox="0 0 20 20"><path fill="#fff" d="M13.36 10.63L6.4 2H2v16h4.64V9.37L13.6 18H18V2h-4.64z"/></svg>
+                네이버로 로그인
             </button>
             <p class="signup-text">계정이 없으신가요? <a href="#">회원가입</a></p>
         </div>
