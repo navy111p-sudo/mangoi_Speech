@@ -512,7 +512,7 @@ function evaluateSpeech(spokenText) {
     var grammarScore = calculateGrammarScore(grammarResult.matches);
     var fluencyScore = calculateFluencyScore(spokenText, state.currentSentence);
     var averageScore = Math.round(((pronunciationScore + grammarScore + fluencyScore) / 3) * 10) / 10;
-    var correctedSentence = applyCorrestions(spokenText, grammarResult.matches);
+    var correctedSentence = state.currentSentence
 
     var attemptResult = {
       attempt: state.currentAttempt,
