@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="format-detection" content="telephone=no">
-  <title>Mangoi Speech Coach - ìì´ ë°ì êµì </title>
+  <title>Mangoi Speech Coach - 영어 발음 교정</title>
 
   <!-- PWA meta tags -->
   <meta name="theme-color" content="#4F46E5">
@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- IE11/Edge í´ë¦¬í: Promise, fetch, URL, Symbol -->
+  <!-- IE11/Edge 폴리필: Promise, fetch, URL, Symbol -->
   <!--[if IE]>
   <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3/dist/fetch.umd.js"></script>
@@ -30,61 +30,61 @@
 </head>
 <body>
 
-  <!-- ===== Auth Section (ë¡ê·¸ì¸/íìê°ì) ===== -->
+  <!-- ===== Auth Section (로그인/회원가입) ===== -->
   <section class="auth-section" id="authSection">
     <div class="auth-container">
       <h2 style="text-align:center; margin-bottom:1rem; font-size:1.3rem; color:#e2e8f0;">Mangoi Speech Coach</h2>
 
       <div class="auth-tabs">
-        <button class="auth-tab is-active" id="tabLogin" onclick="showLoginTab()">ë¡ê·¸ì¸</button>
-        <button class="auth-tab" id="tabSignup" onclick="showSignupTab()">íìê°ì</button>
+        <button class="auth-tab is-active" id="tabLogin" onclick="showLoginTab()">로그인</button>
+        <button class="auth-tab" id="tabSignup" onclick="showSignupTab()">회원가입</button>
       </div>
 
-      <!-- ë¡ê·¸ì¸ í¼ -->
+      <!-- 로그인 폼 -->
       <form class="auth-form" id="loginForm" onsubmit="handleLoginFormSubmit(event)">
         <div class="auth-field">
-          <input type="email" id="loginEmail" placeholder="ì´ë©ì¼" required>
+          <input type="email" id="loginEmail" placeholder="이메일" required>
         </div>
         <div class="auth-field">
-          <input type="password" id="loginPassword" placeholder="ë¹ë°ë²í¸" required>
+          <input type="password" id="loginPassword" placeholder="비밀번호" required>
         </div>
-        <button type="submit" class="auth-btn auth-btn--primary">ë¡ê·¸ì¸</button>
-        <div class="auth-divider"><span>ëë</span></div>
-        <button type="button" class="auth-btn auth-btn--google" onclick="signInWithGoogle()">Googleë¡ ë¡ê·¸ì¸</button>
+        <button type="submit" class="auth-btn auth-btn--primary">로그인</button>
+        <div class="auth-divider"><span>또는</span></div>
+        <button type="button" class="auth-btn auth-btn--google" onclick="signInWithGoogle()">Google로 로그인</button>
         <div style="text-align:center; margin-top:0.5rem;">
-          <button type="button" class="auth-btn--link" onclick="handleResetPassword()">ë¹ë°ë²í¸ ì°¾ê¸°</button>
+          <button type="button" class="auth-btn--link" onclick="handleResetPassword()">비밀번호 찾기</button>
         </div>
       </form>
 
-      <!-- íìê°ì í¼ -->
+      <!-- 회원가입 폼 -->
       <form class="auth-form" id="signupForm" style="display:none;" onsubmit="handleSignupFormSubmit(event)">
         <div class="auth-field">
-          <input type="text" id="signupName" placeholder="ëë¤ì" required>
+          <input type="text" id="signupName" placeholder="닉네임" required>
         </div>
         <div class="auth-field">
-          <input type="email" id="signupEmail" placeholder="ì´ë©ì¼" required>
+          <input type="email" id="signupEmail" placeholder="이메일" required>
         </div>
         <div class="auth-field">
-          <input type="password" id="signupPassword" placeholder="ë¹ë°ë²í¸ (6ì ì´ì)" required minlength="6">
+          <input type="password" id="signupPassword" placeholder="비밀번호 (6자 이상)" required minlength="6">
         </div>
-        <button type="submit" class="auth-btn auth-btn--primary">íìê°ì</button>
-        <div class="auth-divider"><span>ëë</span></div>
-        <button type="button" class="auth-btn auth-btn--google" onclick="signInWithGoogle()">Googleë¡ ììíê¸°</button>
+        <button type="submit" class="auth-btn auth-btn--primary">회원가입</button>
+        <div class="auth-divider"><span>또는</span></div>
+        <button type="button" class="auth-btn auth-btn--google" onclick="signInWithGoogle()">Google로 시작하기</button>
       </form>
 
-      <!-- ê²ì¤í¸ ëª¨ë -->
+      <!-- 게스트 모드 -->
       <div style="text-align:center; margin-top:1rem;">
-        <button type="button" class="auth-btn--ghost" onclick="document.getElementById('authSection').style.display='none'">ê²ì¤í¸ë¡ ììíê¸°</button>
+        <button type="button" class="auth-btn--ghost" onclick="document.getElementById('authSection').style.display='none'">게스트로 시작하기</button>
       </div>
     </div>
   </section>
 
-  <!-- ===== User Info Bar (ë¡ê·¸ì¸ í íì) ===== -->
+  <!-- ===== User Info Bar (로그인 후 표시) ===== -->
   <div class="user-info-bar" id="userInfo" style="display:none;">
     <span id="userDisplayName"></span>
     <div style="display:flex; gap:6px;">
-      <button class="auth-btn--link" onclick="showMyHistory()" style="font-size:0.75rem;">íìµê¸°ë¡</button>
-      <button class="auth-btn--link" onclick="signOut()" style="font-size:0.75rem;">ë¡ê·¸ìì</button>
+      <button class="auth-btn--link" onclick="showMyHistory()" style="font-size:0.75rem;">학습기록</button>
+      <button class="auth-btn--link" onclick="signOut()" style="font-size:0.75rem;">로그아웃</button>
     </div>
   </div>
 
@@ -97,13 +97,13 @@
              onerror="this.style.display='none'">
         <div>
           <h1 class="header__title">Speech <span>Coach</span></h1>
-          <div class="header__subtitle">AI ê¸°ë° ìì´ ë°ì êµì  &amp; ë¬¸ë² íìµ ëêµ¬</div>
+          <div class="header__subtitle">AI 기반 영어 발음 교정 &amp; 문법 학습 도구</div>
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <button class="btn btn--secondary" onclick="showDemoReport()"
-                style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">ê²°ê³¼ ë¯¸ë¦¬ë³´ê¸°</button>
-        <span class="header__badge" id="browserSupport">ì§ìë¨</span>
+                style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">결과 미리보기</button>
+        <span class="header__badge" id="browserSupport">지원됨</span>
       </div>
     </div>
   </header>
@@ -111,12 +111,12 @@
   <!-- ===== Main ===== -->
   <main class="main">
 
-    <!-- ===== ë ë²¨ ì í ì¹ì ===== -->
+    <!-- ===== 레벨 선택 섹션 ===== -->
     <section class="practice" style="border-top: 6px solid #e6a800; padding: 1.5rem 2rem;">
       <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
         <h2 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
           <span style="display: inline-block; width: 6px; height: 24px; background: #e6a800; border-radius: 4px;"></span>
-          BTS ë ë²¨ ì í
+          BTS 레벨 선택
         </h2>
         <select id="levelSelect" style="
           width: 100%; max-width: 500px; padding: 0.75rem 1rem;
@@ -126,21 +126,21 @@
           background: white; color: #0f172a; cursor: pointer;
           outline: none; transition: border-color 0.3s;
         ">
-          <option value="" disabled>ë ë²¨ì ì ííì¸ì</option>
+          <option value="" disabled>레벨을 선택하세요</option>
         </select>
         <div id="levelInfo" style="font-size: 0.85rem; color: #475569; font-weight: 500;"></div>
       </div>
     </section>
 
-    <!-- ===== ì°ìµ ì¸ì ===== -->
+    <!-- ===== 연습 세션 ===== -->
     <section class="practice" role="region">
-      <div class="practice__instruction">ìë ë¬¸ì¥ì í° ìë¦¬ë¡ ì½ì´ë³´ì¸ì</div>
+      <div class="practice__instruction">아래 문장을 큰 소리로 읽어보세요</div>
       <div class="practice__sentence" id="targetSentence">Loading...</div>
       <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
-        <button class="btn btn--secondary" id="btnChangeSentence" type="button">ë¤ë¥¸ ë¬¸ì¥ ë°ê¾¸ê¸°</button>
-        <button class="btn btn--listen" id="btnListenTarget" type="button">ð ìì´ë¯¼ ë°ì ë£ê¸°</button>
+        <button class="btn btn--secondary" id="btnChangeSentence" type="button">다른 문장 바꾸기</button>
+        <button class="btn btn--listen" id="btnListenTarget" type="button">🔊 원어민 발음 듣기</button>
       </div>
-      <!-- ì¬ììë ì¡°ì  ì¬ë¼ì´ë -->
+      <!-- 재생속도 조절 슬라이더 -->
       <div id="speedControl" style="
         display:flex; align-items:center; justify-content:center; gap:0.7rem;
         margin-top:1rem; padding:0.7rem 1.2rem;
@@ -148,13 +148,13 @@
         border-radius:1rem; border:1.5px solid rgba(74,144,217,0.2);
         max-width:380px; margin-left:auto; margin-right:auto;
       ">
-        <span style="font-size:0.78rem; font-weight:600; color:#6b7b94; white-space:nowrap;">ëë¦¬ê²</span>
+        <span style="font-size:0.78rem; font-weight:600; color:#6b7b94; white-space:nowrap;">느리게</span>
         <input type="range" id="ttsSpeedSlider" min="0.1" max="2.0" step="0.1" value="0.9"
           style="
             flex:1; min-width:120px; height:6px; cursor:pointer;
             accent-color:#4a90d9; border-radius:4px;
           ">
-        <span style="font-size:0.78rem; font-weight:600; color:#6b7b94; white-space:nowrap;">ë¹ ë¥´ê²</span>
+        <span style="font-size:0.78rem; font-weight:600; color:#6b7b94; white-space:nowrap;">빠르게</span>
         <span id="ttsSpeedLabel" style="
           font-size:0.82rem; font-weight:700; color:#fff;
           background:linear-gradient(135deg, #4a90d9, #6366f1);
@@ -165,46 +165,46 @@
       </div>
     </section>
 
-    <!-- ===== ë¹ì ì¹ì ===== -->
+    <!-- ===== 녹음 섹션 ===== -->
     <section class="recorder" role="region">
-      <div class="recorder__status" id="recorderStatus">ìë 1/3 - ë²í¼ì ëë¬ ë¹ìì ììíì¸ì</div>
+      <div class="recorder__status" id="recorderStatus">시도 1/3 - 버튼을 눌러 녹음을 시작하세요</div>
       <div class="recorder__attempts" id="attemptDots">
         <div class="recorder__dot is-active" data-attempt="1"></div>
         <div class="recorder__dot" data-attempt="2"></div>
         <div class="recorder__dot" data-attempt="3"></div>
       </div>
-      <button class="btn btn--record" id="btnRecord" type="button">ð</button>
+      <button class="btn btn--record" id="btnRecord" type="button">🎙</button>
       <div class="wave" id="waveAnimation">
         <div class="wave__bar"></div><div class="wave__bar"></div>
         <div class="wave__bar"></div><div class="wave__bar"></div>
         <div class="wave__bar"></div>
       </div>
-      <div class="recorder__text recorder__text--empty" id="recognizedText">ë§ì´í¬ ë²í¼ì ëë¥´ê³  ìì´ë¡ ë§í´ë³´ì¸ì</div>
+      <div class="recorder__text recorder__text--empty" id="recognizedText">마이크 버튼을 누르고 영어로 말해보세요</div>
     </section>
 
-    <!-- ===== í¼ëë°± ì¹ì ===== -->
+    <!-- ===== 피드백 섹션 ===== -->
     <section class="feedback" id="feedbackSection" role="region">
-      <h2 class="feedback__title">ë¶ì ê²°ê³¼</h2>
+      <h2 class="feedback__title">분석 결과</h2>
       <div class="feedback__comparison">
         <div class="feedback__original">
-          <span class="feedback__label">íìì ë¬¸ì¥ (Your Speech)</span>
+          <span class="feedback__label">학생의 문장 (Your Speech)</span>
           <span id="originalText"></span>
         </div>
         <div class="feedback__corrected">
-          <span class="feedback__label">AI êµì  ë¬¸ì¥ (Corrected)</span>
+          <span class="feedback__label">AI 교정 문장 (Corrected)</span>
           <span id="correctedText"></span>
         </div>
       </div>
       <div class="feedback__errors" id="errorList"></div>
       <div class="feedback__listen-btn">
-        <button class="btn btn--listen" id="btnListenCorrected" type="button">ð êµì ë ë¬¸ì¥ ë£ê¸°</button>
+        <button class="btn btn--listen" id="btnListenCorrected" type="button">🔊 교정된 문장 듣기</button>
       </div>
       <div style="text-align: center; margin-top: 1rem;">
-        <button class="btn btn--primary" id="btnNextAttempt" type="button" style="display: none;">ë¤ì ìëíê¸°</button>
+        <button class="btn btn--primary" id="btnNextAttempt" type="button" style="display: none;">다음 시도하기</button>
       </div>
     </section>
 
-    <!-- ===== ë¦¬í¬í¸ ì¹´ë ì¹ì ===== -->
+    <!-- ===== 리포트 카드 섹션 ===== -->
     <section class="report" id="reportSection" role="region">
       <div class="report__header">
         <h2 class="report__title">Final Report Card</h2>
@@ -249,19 +249,19 @@
         <div id="reportCommentsBody"></div>
       </div>
       <div class="report__actions">
-        <button class="btn btn--print" id="btnPrintReport" type="button" onclick="printReport()">ð¨ï¸ ì¸ì / PDF ì ì¥</button>
-        <button class="btn btn--primary" id="btnRestart" type="button">ì²ìë¶í° ë¤ì ì°ìµíê¸°</button>
+        <button class="btn btn--print" id="btnPrintReport" type="button" onclick="printReport()">🖨️ 인쇄 / PDF 저장</button>
+        <button class="btn btn--primary" id="btnRestart" type="button">처음부터 다시 연습하기</button>
       </div>
     </section>
 
   </main>
 
-  <!-- ===== ìì¸ í¼ëë°± ëª¨ë¬ ===== -->
+  <!-- ===== 상세 피드백 모달 ===== -->
   <div class="modal" id="feedbackModal">
     <div class="modal__content">
       <div class="modal__header">
-        <h2 class="modal__title">ìì¸ í¼ëë°± (Detailed Feedback)</h2>
-        <button class="modal__close" id="btnCloseModal">â</button>
+        <h2 class="modal__title">상세 피드백 (Detailed Feedback)</h2>
+        <button class="modal__close" id="btnCloseModal">✕</button>
       </div>
       <div class="modal__body">
         <div class="modal__section-title">Score Analysis</div>
@@ -292,7 +292,7 @@
         <div id="modalErrorList"></div>
       </div>
       <div class="modal__footer">
-        <button class="btn btn--listen" id="btnPlayCorrectedModal">ð êµì ë ë¬¸ì¥ ë£ê¸°</button>
+        <button class="btn btn--listen" id="btnPlayCorrectedModal">🔊 교정된 문장 듣기</button>
       </div>
     </div>
   </div>
@@ -302,7 +302,7 @@
     <div>Mangoi Speech Coach &copy; 2026 - AI Powered Learning</div>
   </footer>
 
-  <!-- ===== ë§ì¤ì½í¸ ë¹ëì¤ (ë í¸ë¡ TV) ===== -->
+  <!-- ===== 마스코트 비디오 (레트로 TV) ===== -->
   <div class="mascot-wrap">
     <div class="retro-tv">
       <div class="retro-tv__antenna">
@@ -316,7 +316,7 @@
         </video>
       </div>
       <div class="retro-tv__panel">
-        <button class="mascot-sound-btn" id="mascotSoundBtn" type="button">ìë¦¬ ì¼ê¸°</button>
+        <button class="mascot-sound-btn" id="mascotSoundBtn" type="button">소리 켜기</button>
       </div>
       <div class="retro-tv__legs">
         <div class="retro-tv__leg"></div>
@@ -325,16 +325,16 @@
     </div>
   </div>
 
-  <!-- ===== ì¹´ì¹´ì¤í¡ ìë´ ===== -->
+  <!-- ===== 카카오톡 상담 ===== -->
   <a class="kakao-chat-btn" href="https://pf.kakao.com/_xnxaxfxj/chat" target="_blank" rel="noopener">
     <svg class="kakao-chat-btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 3C6.477 3 2 6.463 2 10.714c0 2.738 1.823 5.137 4.564 6.476-.145.53-.936 3.41-.968 3.61 0 0-.02.166.088.23.108.063.235.03.235.03.31-.043 3.595-2.356 4.16-2.774.62.09 1.26.137 1.921.137 5.523 0 10-3.463 10-7.714C22 6.463 17.523 3 12 3z"/>
     </svg>
-    <span>ì¹´í¡ìë´</span>
+    <span>카톡상담</span>
   </a>
 
   <!-- ===== PWA Install Button ===== -->
-  <button id="btnInstallApp" style="display:none;">ì± ì¤ì¹</button>
+  <button id="btnInstallApp" style="display:none;">앱 설치</button>
 
   <!-- ===== Firebase SDK (CDN compat mode) ===== -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -353,7 +353,7 @@
   <script src="js/firebase-auth.js"></script>
   <script src="js/firebase-db.js"></script>
 
-  <!-- ===== ë§ì¤ì½í¸ ë¹ëì¤ ìë¦¬ í ê¸ ===== -->
+  <!-- ===== 마스코트 비디오 소리 토글 ===== -->
   <script>
   (function () {
     var mv = document.getElementById("mascotVideo");
@@ -365,14 +365,14 @@
         mv.currentTime = 0; mv.muted = false;
         var playPromise = mv.play();
         if (playPromise !== undefined) {
-          playPromise.then(function () { btn.textContent = "ìë¦¬ ëê¸°"; })
+          playPromise.then(function () { btn.textContent = "소리 끄기"; })
             .catch(function (error) {
-              console.warn("ì¬ì ì¤í¨:", error);
-              mv.muted = true; mv.play(); btn.textContent = "ìë¦¬ ëê¸° (ììê±°)";
+              console.warn("재생 실패:", error);
+              mv.muted = true; mv.play(); btn.textContent = "소리 끄기 (음소거)";
             });
-        } else { btn.textContent = "ìë¦¬ ëê¸°"; }
+        } else { btn.textContent = "소리 끄기"; }
       } else {
-        mv.pause(); mv.currentTime = 0; btn.textContent = "ìë¦¬ ì¼ê¸°";
+        mv.pause(); mv.currentTime = 0; btn.textContent = "소리 켜기";
       }
     }
     if (btn.addEventListener) {
@@ -380,12 +380,12 @@
       btn.addEventListener("touchend", handlePlayToggle, false);
     } else if (btn.attachEvent) { btn.attachEvent("onclick", handlePlayToggle); }
     if (mv.addEventListener) {
-      mv.addEventListener("ended", function () { mv.pause(); mv.currentTime = 0; btn.textContent = "ìë¦¬ ì¼ê¸°"; }, false);
+      mv.addEventListener("ended", function () { mv.pause(); mv.currentTime = 0; btn.textContent = "소리 켜기"; }, false);
     }
   })();
   </script>
 
-  <!-- ===== TTS ì¬ììë ì¡°ì  ===== -->
+  <!-- ===== TTS 재생속도 조절 ===== -->
   <script>
   (function () {
     var slider = document.getElementById("ttsSpeedSlider");
@@ -397,7 +397,7 @@
       window.ttsRate = val;
       label.textContent = val.toFixed(1) + "x";
     });
-    // speak í¨ìë¥¼ ëííì¬ ì¬ë¼ì´ë ê°ì ì ì©
+    // speak 함수를 랙핑하여 슬라이더 값을 적왩
     var _waitSpeak = setInterval(function () {
       if (typeof window.speak === "function" && !window._speakWrapped) {
         var _origSpeak = window.speak;
@@ -427,9 +427,9 @@
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("service-worker.js").then(function (reg) {
-        console.log("[SW] ë±ë¡ ì±ê³µ:", reg.scope);
+        console.log("[SW] 등록 성공:", reg.scope);
       }).catch(function (err) {
-        console.warn("[SW] ë±ë¡ ì¤í¨:", err);
+        console.warn("[SW] 등록 실패:", err);
       });
     });
   }
@@ -451,7 +451,7 @@
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(function (choiceResult) {
           if (choiceResult.outcome === "accepted") {
-            console.log("[PWA] ì¤ì¹ ìë½");
+            console.log("[PWA] 설치 수락");
           }
           deferredPrompt = null;
           btnInstall.style.display = "none";
@@ -459,36 +459,36 @@
       });
     }
     window.addEventListener("appinstalled", function () {
-      console.log("[PWA] ì¤ì¹ ìë£");
+      console.log("[PWA] 설치 완료");
       deferredPrompt = null;
       if (btnInstall) btnInstall.style.display = "none";
     });
   })();
   </script>
 
-  <!-- ===== íìµ ê¸°ë¡ ë³´ê¸° ===== -->
+  <!-- ===== 학습 기록 보기 ===== -->
   <script>
   function showMyHistory() {
     if (typeof getSessionHistory !== "function") {
-      alert("ë¡ê·¸ì¸ í íìµ ê¸°ë¡ì íì¸í  ì ììµëë¤.");
+      alert("로그인 후 학습 기록을 확인할 수 있습니다.");
       return;
     }
     getSessionHistory(10).then(function (sessions) {
       if (!sessions || sessions.length === 0) {
-        alert("ì ì¥ë íìµ ê¸°ë¡ì´ ììµëë¤.");
+        alert("저장된 학습 기록이 없습니다.");
         return;
       }
-      var msg = "=== ìµê·¼ íìµ ê¸°ë¡ ===\n\n";
+      var msg = "=== 최근 학습 기록 ===\n\n";
       sessions.forEach(function (s, i) {
         var d = s.createdAt ? new Date(s.createdAt.seconds * 1000) : new Date();
         msg += (i + 1) + ". " + d.toLocaleDateString("ko-KR") + " - ";
-        msg += "ë ë²¨: " + (s.levelKey || "N/A") + ", ";
-        msg += "ìµê³ ì : " + (s.bestScore ? s.bestScore.toFixed(1) : "N/A") + "\n";
+        msg += "레벨: " + (s.levelKey || "N/A") + ", ";
+        msg += "최고점: " + (s.bestScore ? s.bestScore.toFixed(1) : "N/A") + "\n";
       });
       alert(msg);
     }).catch(function (err) {
-      console.error("ê¸°ë¡ ì¡°í ì¤í¨:", err);
-      alert("íìµ ê¸°ë¡ì ë¶ë¬ì¤ì§ ëª»íìµëë¤.");
+      console.error("기록 조회 실패:", err);
+      alert("학습 기록을 불러오지 못했습니다.");
     });
   }
   </script>
