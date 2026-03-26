@@ -29,57 +29,7 @@
   <link rel="stylesheet" href="css/auth-styles.css?v=1">
 </head>
 <body>
-
-  <!-- ===== Auth Section (로그인/회원가입) ===== -->
-  <section class="auth-section" id="authSection">
-    <div class="auth-container">
-      <h2 style="text-align:center; margin-bottom:1rem; font-size:1.3rem; color:#e2e8f0;">Mangoi Speech Coach</h2>
-
-      <div class="auth-tabs">
-        <button class="auth-tab is-active" id="tabLogin" onclick="showLoginTab()">로그인</button>
-        <button class="auth-tab" id="tabSignup" onclick="showSignupTab()">회원가입</button>
-      </div>
-
-      <!-- 로그인 폼 -->
-      <form class="auth-form" id="loginForm" onsubmit="handleLoginFormSubmit(event)">
-        <div class="auth-field">
-          <input type="email" id="loginEmail" placeholder="이메일" required>
-        </div>
-        <div class="auth-field">
-          <input type="password" id="loginPassword" placeholder="비밀번호" required>
-        </div>
-        <button type="submit" class="auth-btn auth-btn--primary">로그인</button>
-        <div class="auth-divider"><span>또는</span></div>
-        <button type="button" class="auth-btn auth-btn--google" onclick="signInWithGoogle()">Google로 로그인</button>
-        <div style="text-align:center; margin-top:0.5rem;">
-          <button type="button" class="auth-btn--link" onclick="handleResetPassword()">비밀번호 찾기</button>
-        </div>
-      </form>
-
-      <!-- 회원가입 폼 -->
-      <form class="auth-form" id="signupForm" style="display:none;" onsubmit="handleSignupFormSubmit(event)">
-        <div class="auth-field">
-          <input type="text" id="signupName" placeholder="닉네임" required>
-        </div>
-        <div class="auth-field">
-          <input type="email" id="signupEmail" placeholder="이메일" required>
-        </div>
-        <div class="auth-field">
-          <input type="password" id="signupPassword" placeholder="비밀번호 (6자 이상)" required minlength="6">
-        </div>
-        <button type="submit" class="auth-btn auth-btn--primary">회원가입</button>
-        <div class="auth-divider"><span>또는</span></div>
-        <button type="button" class="auth-btn auth-btn--google" onclick="signInWithGoogle()">Google로 시작하기</button>
-      </form>
-
-      <!-- 게스트 모드 -->
-      <div style="text-align:center; margin-top:1rem;">
-        <button type="button" class="auth-btn--ghost" onclick="document.getElementById('authSection').style.display='none'">게스트로 시작하기</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== User Info Bar (로그인 후 표시) ===== -->
+    <!-- ===== User Info Bar (로그인 후 표시) ===== -->
   <div class="user-info-bar" id="userInfo" style="display:none;">
     <span id="userDisplayName"></span>
     <div style="display:flex; gap:6px;">
