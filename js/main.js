@@ -620,138 +620,334 @@ function performBasicGrammarCheck(text) {
   return errors;
 }
 
+// ===== IMPROVED SCORING FUNCTIONS =====
+
+// 1. Enhanced Pronunciation Score with phonetic awareness
 function calculatePronunciationScore(spoken, target) {
-  var spokenClean = spoken.toLowerCase().replace(/[^\w\s]/g, "").trim();
-  var targetClean = target.toLowerCase().replace(/[^\w\s]/g, "").trim();
-  var spokenWords = spokenClean.split(/\s+/);
-  var targetWords = targetClean.split(/\s+/);
-  var matchCount = 0;
-  for (var t = 0; t < targetWords.length; t++) {
-    if (spokenWords.indexOf(targetWords[t]) !== -1) matchCount++;
-  }
-  var matchRate = targetWords.length > 0 ? matchCount / targetWords.length : 0;
-  var similarity = calculateSimilarity(spokenClean, targetClean);
-  var rawScore = (matchRate * 0.6 + similarity * 0.4) * 10;
-  return Math.round(Math.min(10, Math.max(0, rawScore)) * 10) / 10;
+    var spokenClean = spoken.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+    var targetClean = target.toLowerCase().replace(/[^a-z0-9\s']/g, '').trim();
+
+    var spokenWords = spokenClean.split(/\s+/).filter(function(w) { return w.length > 0; });
+    var targetWords = targetClean.split(/\s+/).filter(function(w) { return w.length > 0; });
+
+    if (targetWords.length === 0) return 0;
+
+    // Word-by-word matching with fuzzy comparison
+    var totalScore = 0;
+    var matchDetails = [];
+
+    for (var i = 0; i < targetWords.length; i++) {
+        var targetWord = targetWords[i];
+        var bestScore = 0;
+        var bestMatch = '';
+
+        // Search in a window around the expected position
+        var searchStart = Math.max(0, i - 2);
+        var searchEnd = Math.min(spokenWords.length, i + 3);
+
+        for (var j = searchStart; j < searchEnd; j++) {
+            var score = getWordSimilarity(spokenWords[j], targetWord);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = spokenWords[j];
+            }
+        }
+
+        // Also check exact match anywhere (for reordered words)
+        for (var k = 0; k < spokenWords.length; k++) {
+            if (spokenWords[k] === targetWord) {
+                bestScore = 1.0;
+                bestMatch = spokenWords[k];
+                break;
+            }
+        }
+
+        totalScore += bestScore;
+        matchDetails.push({
+            target: targetWord,
+            spoken: bestMatch,
+            score: bestScore
+        });
+    }
+
+    // Store match details for feedback display
+    state.lastMatchDetails = matchDetails;
+
+    var avgScore = totalScore / targetWords.length;
+
+    // Overall string similarity as secondary factor
+    var stringSim = calculateSimilarity(spokenClean, targetClean);
+
+    // Weighted combination: 70% word matching + 30% string similarity
+    var rawScore = (avgScore * 0.7 + stringSim * 0.3) * 100;
+
+    return Math.round(Math.min(100, Math.max(0, rawScore)));
+}
+// Enhanced word similarity with phonetic awareness
+function getWordSimilarity(word1, word2) {
+    if (!word1 || !word2) return 0;
+    if (word1 === word2) return 1.0;
+
+    // Basic edit distance similarity
+    var editSim = 1 - (levenshteinDistance(word1, word2) / Math.max(word1.length, word2.length));
+
+    // Phonetic similarity (simplified)
+    var phoneSim = getPhoneticSimilarity(word1, word2);
+
+    // Starting sound bonus (important for pronunciation)
+    var startBonus = 0;
+    if (word1.charAt(0) === word2.charAt(0)) startBonus = 0.1;
+    if (word1.substring(0, 2) === word2.substring(0, 2)) startBonus = 0.15;
+
+    // Combine: 50% edit distance + 35% phonetic + 15% start bonus
+    return Math.min(1.0, editSim * 0.5 + phoneSim * 0.35 + startBonus);
 }
 
+// Levenshtein distance
+function levenshteinDistance(s1, s2) {
+    var len1 = s1.length, len2 = s2.length;
+    var matrix = [];
+    for (var i = 0; i <= len1; i++) {
+        matrix[i] = [i];
+    }
+    for (var j = 0; j <= len2; j++) {
+        matrix[0][j] = j;
+    }
+    for (var i = 1; i <= len1; i++) {
+        for (var j = 1; j <= len2; j++) {
+            var cost = s1.charAt(i-1) === s2.charAt(j-1) ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i-1][j] + 1,
+                matrix[i][j-1] + 1,
+                matrix[i-1][j-1] + cost
+            );
+        }
+    }
+    return matrix[len1][len2];
+}
+
+// Simplified phonetic similarity using common English sound groups
+function getPhoneticSimilarity(word1, word2) {
+    var p1 = simplifiedPhonetic(word1);
+    var p2 = simplifiedPhonetic(word2);
+    if (p1 === p2) return 1.0;
+    return 1 - (levenshteinDistance(p1, p2) / Math.max(p1.length, p2.length, 1));
+}
+
+function simplifiedPhonetic(word) {
+    return word.toLowerCase()
+        .replace(/ph/g, 'f')
+        .replace(/th/g, 'T')
+        .replace(/sh/g, 'S')
+        .replace(/ch/g, 'C')
+        .replace(/ck/g, 'k')
+        .replace(/ght/g, 't')
+        .replace(/tion/g, 'Sn')
+        .replace(/sion/g, 'Sn')
+        .replace(/ous/g, 'us')
+        .replace(/ight/g, 'it')
+        .replace(/ough/g, 'o')
+        .replace(/wr/g, 'r')
+        .replace(/kn/g, 'n')
+        .replace(/gn/g, 'n')
+        .replace(/mb$/g, 'm')
+        .replace(/wh/g, 'w')
+        .replace(/([aeiou])\1+/g, '$1')
+        .replace(/([^aeiou])\1+/g, '$1');
+}
+// 2. Improved calculateSimilarity (Levenshtein-based, normalized)
 function calculateSimilarity(str1, str2) {
-  var len1 = str1.length;
-  var len2 = str2.length;
-  if (len1 === 0 && len2 === 0) return 1;
-  if (len1 === 0 || len2 === 0) return 0;
-  var matrix = [];
-  var i, j;
-  for (i = 0; i <= len1; i++) matrix[i] = [i];
-  for (j = 0; j <= len2; j++) matrix[0][j] = j;
-  for (i = 1; i <= len1; i++) {
-    for (j = 1; j <= len2; j++) {
-      var cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
-    }
-  }
-  return 1 - matrix[len1][len2] / Math.max(len1, len2);
+    if (str1 === str2) return 1;
+    var len1 = str1.length, len2 = str2.length;
+    if (len1 === 0 || len2 === 0) return 0;
+    var dist = levenshteinDistance(str1, str2);
+    return 1 - (dist / Math.max(len1, len2));
 }
 
+// 3. Improved Grammar Score
 function calculateGrammarScore(matches) {
-  return Math.round(Math.max(0, 10 - matches.length * 2) * 10) / 10;
+    if (!matches || matches.length === 0) return 100;
+    // Weight errors by severity
+    var totalPenalty = 0;
+    for (var i = 0; i < matches.length; i++) {
+        var m = matches[i];
+        var type = (m.rule && m.rule.category && m.rule.category.id) || '';
+        if (type.indexOf('GRAMMAR') !== -1) totalPenalty += 12;
+        else if (type.indexOf('TYPOS') !== -1) totalPenalty += 5;
+        else if (type.indexOf('PUNCTUATION') !== -1) totalPenalty += 3;
+        else totalPenalty += 8;
+    }
+    return Math.max(0, Math.round(100 - totalPenalty));
 }
 
+// 4. Improved Fluency Score
 function calculateFluencyScore(spoken, target) {
-  var spokenWords = spoken.trim().split(/\s+/).length;
-  var targetWords = target.trim().split(/\s+/).length;
-  var completeness = Math.min(1, spokenWords / targetWords);
-  var speedScore = 1;
-  if (state.recordingStartTime) {
-    var durationSec = (Date.now() - state.recordingStartTime) / 1000;
-    var wpm = (spokenWords / durationSec) * 60;
-    if (wpm >= 80 && wpm <= 160) speedScore = 1;
-    else if (wpm >= 60 && wpm < 80) speedScore = 0.8;
-    else if (wpm > 160 && wpm <= 200) speedScore = 0.8;
-    else speedScore = 0.5;
-  }
-  var words = spoken.split(/\s+/);
-  var totalLen = 0;
-  for (var w = 0; w < words.length; w++) {
-    totalLen += words[w].length;
-  }
-  var avgLength = totalLen / words.length;
-  var naturalness = avgLength >= 2 && avgLength <= 8 ? 1 : 0.7;
-  var rawScore = (completeness * 0.5 + speedScore * 0.3 + naturalness * 0.2) * 10;
-  return Math.round(Math.min(10, Math.max(0, rawScore)) * 10) / 10;
-}
+    var spokenWords = spoken.trim().split(/\s+/).filter(function(w) { return w.length > 0; });
+    var targetWords = target.trim().split(/\s+/).filter(function(w) { return w.length > 0; });
 
-function applyCorrestions(text, matches) {
-  if (matches.length === 0) return text;
-  var sorted = matches.slice(0).sort(function (a, b) {
-    return b.offset - a.offset;
-  });
-  var corrected = text;
-  for (var s = 0; s < sorted.length; s++) {
-    var match = sorted[s];
-    if (match.replacements && match.replacements.length > 0) {
-      var before = corrected.substring(0, match.offset);
-      var after = corrected.substring(match.offset + match.length);
-      corrected = before + match.replacements[0].value + after;
+    if (targetWords.length === 0) return 0;
+
+    // Completeness: how many target words were spoken
+    var completeness = Math.min(1, spokenWords.length / targetWords.length);
+
+    // Word order: check if words appear in similar order
+    var orderScore = calculateWordOrder(spokenWords, targetWords);
+
+    // Speed/Duration analysis
+    var speedScore = 1.0;
+    if (state.recordingStartTime) {
+        var durationSec = (Date.now() - state.recordingStartTime) / 1000;
+        var wordsPerMin = (spokenWords.length / durationSec) * 60;
+        // Natural English speech: 120-180 wpm
+        if (wordsPerMin < 60) speedScore = 0.6;
+        else if (wordsPerMin < 100) speedScore = 0.8;
+        else if (wordsPerMin <= 200) speedScore = 1.0;
+        else speedScore = 0.85; // too fast
     }
-  }
-  return corrected;
+
+    // Length penalty: speaking too few or too many words
+    var lengthRatio = spokenWords.length / targetWords.length;
+    var lengthScore = 1.0;
+    if (lengthRatio < 0.5) lengthScore = 0.5;
+    else if (lengthRatio < 0.8) lengthScore = 0.8;
+    else if (lengthRatio > 1.5) lengthScore = 0.85;
+
+    var rawScore = (completeness * 30 + orderScore * 30 + speedScore * 20 + lengthScore * 20);
+    return Math.round(Math.min(100, Math.max(0, rawScore)));
 }
 
-// =====================
-// 6. 피드백 표시
-// =====================
+function calculateWordOrder(spoken, target) {
+    // Check what fraction of adjacent word pairs in target appear in same order in spoken
+    if (target.length < 2) return 1.0;
+    var spokenLower = spoken.map(function(w) { return w.toLowerCase(); });
+    var targetLower = target.map(function(w) { return w.toLowerCase(); });
+
+    var correctPairs = 0;
+    var totalPairs = targetLower.length - 1;
+
+    for (var i = 0; i < totalPairs; i++) {
+        var idx1 = spokenLower.indexOf(targetLower[i]);
+        var idx2 = spokenLower.indexOf(targetLower[i + 1]);
+        if (idx1 !== -1 && idx2 !== -1 && idx1 < idx2) {
+            correctPairs++;
+        }
+    }
+
+    return totalPairs > 0 ? correctPairs / totalPairs : 1.0;
+}
+// 5. Enhanced showFeedback with word-by-word diff highlighting
 function showFeedback(result) {
-  if (DOM.feedbackSection) DOM.feedbackSection.classList.add("is-visible");
-  if (DOM.originalText) DOM.originalText.textContent = result.spokenText;
-  if (DOM.correctedText) DOM.correctedText.textContent = result.correctedText;
-  if (DOM.errorList) {
-    DOM.errorList.innerHTML = "";
-    if (result.errors.length > 0) {
-      for (var e = 0; e < result.errors.length; e++) {
-        var error = result.errors[e];
-        var errorItem = document.createElement("div");
-        errorItem.className = "feedback__error-item";
-        var description = (error.rule && error.rule.description) ? error.rule.description : error.message;
-        var correction = (error.replacements && error.replacements.length > 0)
-          ? ' (수정 제안: "' + error.replacements[0].value + '")'
-          : "";
-        errorItem.textContent = description + correction;
-        DOM.errorList.appendChild(errorItem);
-      }
+    var feedbackSection = DOM.feedbackSection;
+    feedbackSection.classList.add('visible');
+
+    // Show spoken text (what user said)
+    DOM.originalText.innerHTML = highlightDiff(result.spokenText, state.currentSentence, 'spoken');
+
+    // Show target sentence (what they should have said) with match highlighting
+    DOM.correctedText.innerHTML = highlightDiff(state.currentSentence, result.spokenText, 'target');
+
+    // Show error details
+    var errorList = DOM.errorList;
+    errorList.innerHTML = '';
+
+    // Add word-by-word comparison if available
+    if (state.lastMatchDetails && state.lastMatchDetails.length > 0) {
+        var diffSummary = document.createElement('div');
+        diffSummary.className = 'feedback__diff-summary';
+        var correctCount = 0;
+        var closeCount = 0;
+        var wrongCount = 0;
+
+        for (var i = 0; i < state.lastMatchDetails.length; i++) {
+            var d = state.lastMatchDetails[i];
+            if (d.score >= 0.9) correctCount++;
+            else if (d.score >= 0.5) closeCount++;
+            else wrongCount++;
+        }
+
+        diffSummary.innerHTML = '<div style="margin-bottom:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;">' +
+            '<span style="color:#10B981;">\u25cf \uc815\ud655 ' + correctCount + '\uac1c</span> \u00a0 ' +
+            '<span style="color:#F59E0B;">\u25cf \ube44\uc2b7 ' + closeCount + '\uac1c</span> \u00a0 ' +
+            '<span style="color:#EF4444;">\u25cf \ud2c0\ub9bc ' + wrongCount + '\uac1c</span>' +
+            '</div>';
+        errorList.appendChild(diffSummary);
+    }
+
+    if (result.errors && result.errors.length > 0) {
+        for (var i = 0; i < result.errors.length; i++) {
+            var error = result.errors[i];
+            var errorItem = document.createElement('div');
+            errorItem.className = 'feedback__error';
+            var desc = error.message || error.description || '';
+            var correction = (error.replacements && error.replacements.length > 0) ? error.replacements[0].value : '';
+            errorItem.innerHTML = '<span>' + escapeHtml(desc) + '</span>' +
+                (correction ? '<span style="color:#10B981;"> \u2192 ' + escapeHtml(correction) + '</span>' : '');
+            errorList.appendChild(errorItem);
+        }
     } else {
-      var noError = document.createElement("div");
-      noError.className = "feedback__error-item";
-      noError.style.borderLeftColor = "#10B981";
-      noError.style.background = "rgba(16, 185, 129, 0.08)";
-      noError.textContent = "문법 오류가 없습니다. 잘하셨습니다!";
-      DOM.errorList.appendChild(noError);
+        var noError = document.createElement('div');
+        noError.className = 'feedback__error';
+        noError.style.borderLeftColor = '#10B981';
+        noError.style.background = 'rgba(16,185,129,0.08)';
+        noError.innerHTML = '\ubb38\ubc95 \uc624\ub958\uac00 \uc5c6\uc2b5\ub2c8\ub2e4! \ud6cc\ub96d\ud574\uc694! \ud83d\udc4f';
+        errorList.appendChild(noError);
     }
-  }
 
-  if (DOM.recorderStatus) {
-    DOM.recorderStatus.textContent =
-      "시도 " + state.currentAttempt + "/" + state.maxAttempts + " 완료 | " +
-      "발음: " + result.scores.pronunciation + " | 문법: " + result.scores.grammar + " | " +
-      "유창성: " + result.scores.fluency + " | 평귰: " + result.scores.average;
-  }
+    DOM.recorderStatus.textContent = '\u2705 \ubd84\uc11d \uc644\ub8cc! (Attempt ' + state.currentAttempt + '/' + state.maxAttempts + ')';
 
-  updateAttemptDot(state.currentAttempt, "done");
+    // Update scores display
+    var scores = result.scores;
+    updateAttemptDot(state.currentAttempt, 'done', {
+        pronunciation: scores.pronunciation,
+        grammar: scores.grammar,
+        fluency: scores.fluency,
+        average: scores.average
+    });
 
-  if (state.currentAttempt < state.maxAttempts) {
-    if (DOM.btnNextAttempt) {
-      DOM.btnNextAttempt.style.display = "inline-flex";
-      DOM.btnNextAttempt.textContent = "다음 시도하기 (" + (state.currentAttempt + 1) + "/" + state.maxAttempts + ")";
+    if (state.currentAttempt < state.maxAttempts) {
+        DOM.btnNextAttempt.style.display = 'inline-block';
+    } else {
+        showReport();
     }
-  } else {
-    if (DOM.btnNextAttempt) DOM.btnNextAttempt.style.display = "none";
-    showReport();
-  }
-  smoothScrollTo(DOM.feedbackSection, "start");
+
+    smoothScrollTo(feedbackSection, { block: 'start' });
+}
+// Word diff highlighting function
+function highlightDiff(text, compareWith, mode) {
+    var words = text.trim().split(/\s+/);
+    var compareWords = compareWith.toLowerCase().trim().split(/\s+/);
+    var result = [];
+
+    for (var i = 0; i < words.length; i++) {
+        var wordLower = words[i].toLowerCase().replace(/[^a-z0-9']/g, '');
+        var found = false;
+        var closeMatch = false;
+
+        // Check exact match
+        for (var j = 0; j < compareWords.length; j++) {
+            var cw = compareWords[j].replace(/[^a-z0-9']/g, '');
+            if (wordLower === cw) { found = true; break; }
+        }
+
+        // Check fuzzy match if not exact
+        if (!found) {
+            for (var j = 0; j < compareWords.length; j++) {
+                var cw = compareWords[j].replace(/[^a-z0-9']/g, '');
+                var sim = 1 - (levenshteinDistance(wordLower, cw) / Math.max(wordLower.length, cw.length, 1));
+                if (sim >= 0.6) { closeMatch = true; break; }
+            }
+        }
+
+        if (found) {
+            result.push('<span style="color:#10B981;">' + escapeHtml(words[i]) + '</span>');
+        } else if (closeMatch) {
+            result.push('<span style="color:#F59E0B;text-decoration:underline;">' + escapeHtml(words[i]) + '</span>');
+        } else {
+            result.push('<span style="color:#EF4444;text-decoration:line-through;">' + escapeHtml(words[i]) + '</span>');
+        }
+    }
+
+    return result.join(' ');
 }
 
 // =====================
