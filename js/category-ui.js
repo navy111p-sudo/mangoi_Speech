@@ -57,6 +57,7 @@
     }
 
     // Show/hide optgroups
+    var optgroups = selectEl.querySelectorAll("optgroup");
     for (var i = 0; i < optgroups.length; i++) {
       var show = false;
       for (var g = 0; g < cat.groups.length; g++) {
