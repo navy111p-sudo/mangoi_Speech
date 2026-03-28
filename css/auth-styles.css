@@ -35,7 +35,7 @@
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
 .auth-divider span { font-size: 0.75rem; color: #64748B; }
 
-.user-info-bar { display: flex; align-items: center; justify-content: space-between; max-width: 800px; margin: 0 auto 1rem; padding: 0.5rem 1rem; background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.2); border-radius: 12px; }
+.user-info-bar { display: none !important; align-items: center; justify-content: space-between; max-width: 800px; margin: 0 auto 1rem; padding: 0.5rem 1rem; background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.2); border-radius: 12px; }
 .user-info-left { display: flex; align-items: center; gap: 0.5rem; }
 .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
 .user-name { font-size: 0.875rem; font-weight: 600; color: #E2E8F0; }
