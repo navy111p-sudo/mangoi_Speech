@@ -41,7 +41,7 @@
         .chart-bar:hover { filter: brightness(1.2); transform: scaleX(1.08); }
         .chart-bar::after { content: attr(data-value); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.6); font-size: 0.6rem; font-weight: 600; opacity: 0; transition: opacity 0.3s; }
         .chart-bar:hover::after { opacity: 1; }
-        .bar-1{background:linear-gradient(180deg,#feca57,#ff6b6b);height:72%} .bar-2{background:linear-gradient(180deg,#48dbfb,#0abde3);height:85%} .bar-3{background:linear-gradient(180deg,#ff9ff3,#f368e0);height:60%} .bar-4{background:linear-gradient(180deg,#55efc4,#00b894);height:92%} .bar-5{background:linear-gradient(180deg,#feca57,#ff6b6b);height:45%} .bar-6{background:linear-gradient(180deg,#48dbfb,#0abde3);height:78%} .bar-7{background:linear-gradient(180deg,#ff9ff3,#f368e0);height:88%}
+        .bar-1{background:linear-gradient(180deg,#feca57,#ff6b6b);height:0%} .bar-2{background:linear-gradient(180deg,#48dbfb,#0abde3);height:0%} .bar-3{background:linear-gradient(180deg,#ff9ff3,#f368e0);height:0%} .bar-4{background:linear-gradient(180deg,#55efc4,#00b894);height:0%} .bar-5{background:linear-gradient(180deg,#feca57,#ff6b6b);height:0%} .bar-6{background:linear-gradient(180deg,#48dbfb,#0abde3);height:0%} .bar-7{background:linear-gradient(180deg,#ff9ff3,#f368e0);height:0%}
         .chart-label { color: rgba(255,255,255,0.35); font-size: 0.65rem; }
         .radar-wrap { display: flex; flex-direction: column; align-items: center; }
         .radar-svg { width: 260px; height: 240px; }
@@ -88,10 +88,10 @@
         <p class="subtitle">학습 기록과 성적을 확인하세요</p>
 
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">총 연습 횟수</div></div>
-            <div class="stat-card"><div class="stat-value">78점</div><div class="stat-label">평균 점수</div></div>
-            <div class="stat-card"><div class="stat-value">45분</div><div class="stat-label">총 학습 시간</div></div>
-            <div class="stat-card"><div class="stat-value">5일</div><div class="stat-label">연속 학습</div></div>
+            <div class="stat-card"><div class="stat-value" id="statSessions">0</div><div class="stat-label">총 연습 횟수</div></div>
+            <div class="stat-card"><div class="stat-value" id="statAvgScore">0점</div><div class="stat-label">평균 점수</div></div>
+            <div class="stat-card"><div class="stat-value" id="statTime">0분</div><div class="stat-label">총 학습 시간</div></div>
+            <div class="stat-card"><div class="stat-value" id="statStreak">0일</div><div class="stat-label">연속 학습</div></div>
         </div>
 
         <!-- Radar Chart -->
@@ -118,41 +118,41 @@
                     <line class="radar-axis" x1="150" y1="150" x2="150" y2="30"/>
                     <line class="radar-axis" x1="150" y1="150" x2="240" y2="210"/>
                     <line class="radar-axis" x1="150" y1="150" x2="60" y2="210"/>
-                    <polygon class="radar-area" points="150,48 222,196 78,188"/>
-                    <circle class="radar-dot" cx="150" cy="48" r="5" stroke="#55efc4"/>
-                    <circle class="radar-dot" cx="222" cy="196" r="5" stroke="#feca57"/>
-                    <circle class="radar-dot" cx="78" cy="188" r="5" stroke="#48dbfb"/>
+                    <polygon class="radar-area" id="radarArea" points="150,150 150,150 150,150"/>
+                    <circle class="radar-dot" id="radarDot1" cx="150" cy="150" r="5" stroke="#55efc4"/>
+                    <circle class="radar-dot" id="radarDot2" cx="150" cy="150" r="5" stroke="#feca57"/>
+                    <circle class="radar-dot" id="radarDot3" cx="150" cy="150" r="5" stroke="#48dbfb"/>
                     <text class="radar-label" x="150" y="18" text-anchor="middle">발음</text>
-                    <text class="radar-value" x="150" y="42" text-anchor="middle">85%</text>
+                    <text class="radar-value" id="radarVal1" x="150" y="42" text-anchor="middle">0%</text>
                     <text class="radar-label" x="255" y="220" text-anchor="start">문법</text>
-                    <text class="radar-value" x="255" y="236" text-anchor="start">68%</text>
+                    <text class="radar-value" id="radarVal2" x="255" y="236" text-anchor="start">0%</text>
                     <text class="radar-label" x="45" y="220" text-anchor="end">유창성</text>
-                    <text class="radar-value" x="45" y="236" text-anchor="end">72%</text>
+                    <text class="radar-value" id="radarVal3" x="45" y="236" text-anchor="end">0%</text>
                 </svg>
                 <div class="comment-list">
                     <div class="comment-item">
                         <div class="comment-icon pronunciation">🎤</div>
                         <div>
                             <div class="comment-cat">발음 (Pronunciation)</div>
-                            <div class="comment-text">우수해요! 모음과 자음 발음이 정확하고, 강세와 억양 패턴이 자연스러워요. 'th' 발음에 조금 더 신경 써보세요.</div>
+                            <div class="comment-text">연습을 시작하면 발음 분석 결과가 여기에 표시됩니다.</div>
                         </div>
-                        <span class="comment-score high">85</span>
+                        <span class="comment-score mid" id="commentScore1">0</span>
                     </div>
                     <div class="comment-item">
                         <div class="comment-icon grammar">📝</div>
                         <div>
                             <div class="comment-cat">문법 (Grammar)</div>
-                            <div class="comment-text">기본 문장 구조는 좋지만, 시제 일치와 관사 사용에서 실수가 있어요. 과거/현재 시제 구분 연습을 추천합니다.</div>
+                            <div class="comment-text">연습을 시작하면 문법 분석 결과가 여기에 표시됩니다.</div>
                         </div>
-                        <span class="comment-score mid">68</span>
+                        <span class="comment-score mid" id="commentScore2">0</span>
                     </div>
                     <div class="comment-item">
                         <div class="comment-icon fluency">💬</div>
                         <div>
                             <div class="comment-cat">유창성 (Fluency)</div>
-                            <div class="comment-text">문장 사이의 연결이 자연스러워지고 있어요. 더 긴 문장으로 말하는 연습을 하면 크게 향상될 거예요!</div>
+                            <div class="comment-text">연습을 시작하면 유창성 분석 결과가 여기에 표시됩니다.</div>
                         </div>
-                        <span class="comment-score mid">72</span>
+                        <span class="comment-score mid" id="commentScore3">0</span>
                     </div>
                 </div>
             </div>
@@ -181,11 +181,7 @@
 
         <!-- Recent History -->
         <div class="section-title">최근 학습 기록</div>
-        <div class="history-list">
-            <div class="history-item">
-                <div class="history-score score-high">92</div>
-                <div class="history-info"><div class="history-topic">BTS 3 - Daily Routine</div><div class="history-date">2026.03.26 오늘</div></div>
-            </div>
+        <div class="history-list" id="historyList"><div style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;font-size:0.85rem;">아직 학습 기록이 없습니다</div></div>
             <div class="history-item">
                 <div class="history-score score-mid">78</div>
                 <div class="history-info"><div class="history-topic">BTS 2 - My Family</div><div class="history-date">2026.03.25 어제</div></div>
@@ -197,5 +193,133 @@
         </div>
         <a href="practice.html" class="start-btn">연습 더 하기</a>
     </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+  (function(){
+    auth.onAuthStateChanged(function(user){
+      if(!user) return;
+      var uid = user.uid;
+
+      // Load sessions
+      db.collection("sessions").where("uid","==",uid).orderBy("createdAt","desc").get()
+      .then(function(snap){
+        var sessions = [];
+        snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; sessions.push(d); });
+
+        var total = sessions.length;
+        var totalScore = 0;
+        var pron=0, gram=0, flu=0, scoreCount=0;
+
+        for(var i=0;i<sessions.length;i++){
+          totalScore += sessions[i].bestScore||0;
+          var atts = sessions[i].attempts||[];
+          for(var j=0;j<atts.length;j++){
+            if(atts[j].scores){
+              pron += atts[j].scores.pronunciation||0;
+              gram += atts[j].scores.grammar||0;
+              flu += atts[j].scores.fluency||0;
+              scoreCount++;
+            }
+          }
+        }
+
+        var avgScore = total>0 ? Math.round(totalScore/total) : 0;
+        var avgPron = scoreCount>0 ? Math.round(pron/scoreCount) : 0;
+        var avgGram = scoreCount>0 ? Math.round(gram/scoreCount) : 0;
+        var avgFlu = scoreCount>0 ? Math.round(flu/scoreCount) : 0;
+        var estMinutes = total * 3;
+
+        // Update stats
+        var el;
+        el=document.getElementById("statSessions"); if(el) el.textContent=total;
+        el=document.getElementById("statAvgScore"); if(el) el.textContent=avgScore+"\uC810";
+        el=document.getElementById("statTime"); if(el) el.textContent=estMinutes+"\uBD84";
+
+        // Streak calculation
+        var days={};
+        for(var i=0;i<sessions.length;i++){
+          var ts=sessions[i].createdAt;
+          if(ts&&ts.toDate){
+            var d=ts.toDate();
+            days[d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()]=true;
+          }
+        }
+        var streak=0;
+        var today=new Date();
+        for(var k=0;k<365;k++){
+          var check=new Date(today); check.setDate(check.getDate()-k);
+          var key=check.getFullYear()+"-"+(check.getMonth()+1)+"-"+check.getDate();
+          if(days[key]) streak++; else if(k>0) break;
+        }
+        el=document.getElementById("statStreak"); if(el) el.textContent=streak+"\uC77C";
+
+        // Radar chart
+        var cx=150, cy=150, r=120;
+        function radarPt(pct,angle){
+          var a=angle*Math.PI/180;
+          var dist=r*(pct/100);
+          return [cx+dist*Math.sin(a), cy-dist*Math.cos(a)];
+        }
+        var p1=radarPt(avgPron,0), p2=radarPt(avgGram,120), p3=radarPt(avgFlu,240);
+        var pts=p1[0]+","+p1[1]+" "+p2[0]+","+p2[1]+" "+p3[0]+","+p3[1];
+        el=document.getElementById("radarArea"); if(el) el.setAttribute("points",pts);
+        el=document.getElementById("radarDot1"); if(el){el.setAttribute("cx",p1[0]);el.setAttribute("cy",p1[1]);}
+        el=document.getElementById("radarDot2"); if(el){el.setAttribute("cx",p2[0]);el.setAttribute("cy",p2[1]);}
+        el=document.getElementById("radarDot3"); if(el){el.setAttribute("cx",p3[0]);el.setAttribute("cy",p3[1]);}
+        el=document.getElementById("radarVal1"); if(el) el.textContent=avgPron+"%";
+        el=document.getElementById("radarVal2"); if(el) el.textContent=avgGram+"%";
+        el=document.getElementById("radarVal3"); if(el) el.textContent=avgFlu+"%";
+
+        // Comment scores
+        el=document.getElementById("commentScore1"); if(el){ el.textContent=avgPron; el.className="comment-score "+(avgPron>=80?"high":avgPron>=60?"mid":"low"); }
+        el=document.getElementById("commentScore2"); if(el){ el.textContent=avgGram; el.className="comment-score "+(avgGram>=80?"high":avgGram>=60?"mid":"low"); }
+        el=document.getElementById("commentScore3"); if(el){ el.textContent=avgFlu; el.className="comment-score "+(avgFlu>=80?"high":avgFlu>=60?"mid":"low"); }
+
+        // Bar chart - last 7 sessions
+        var last7=sessions.slice(0,7).reverse();
+        var dayNames=["\uC77C","\uC6D4","\uD654","\uC218","\uBAA9","\uAE08","\uD1A0"];
+        var bars=document.querySelectorAll(".chart-bar");
+        var labels=document.querySelectorAll(".chart-label");
+        for(var i=0;i<bars.length;i++){
+          if(i<last7.length){
+            var sc=last7[i].bestScore||0;
+            bars[i].style.height=Math.max(sc,4)+"%";
+            bars[i].setAttribute("data-value",sc+"\uC810");
+            if(last7[i].createdAt&&last7[i].createdAt.toDate){
+              var dd=last7[i].createdAt.toDate();
+              labels[i].textContent=dayNames[dd.getDay()];
+            }
+          } else {
+            bars[i].style.height="0%";
+            bars[i].setAttribute("data-value","");
+          }
+        }
+
+        // History list
+        var hl=document.getElementById("historyList");
+        if(hl && sessions.length>0){
+          hl.innerHTML="";
+          var show=Math.min(sessions.length,5);
+          for(var i=0;i<show;i++){
+            var s=sessions[i];
+            var sc=s.bestScore||0;
+            var cls=sc>=80?"score-high":"score-mid";
+            var dt="";
+            if(s.createdAt&&s.createdAt.toDate){
+              var d=s.createdAt.toDate();
+              dt=d.getFullYear()+"."+(d.getMonth()+1<10?"0":"")+(d.getMonth()+1)+"."+(d.getDate()<10?"0":"")+d.getDate();
+            }
+            hl.innerHTML+='<div class="history-item"><div class="history-score '+cls+'">'+sc+'</div><div class="history-info"><div class="history-topic">'+(s.level||"")+' - '+(s.targetSentence||"").substring(0,30)+'</div><div class="history-date">'+dt+'</div></div></div>';
+          }
+        }
+      })["catch"](function(e){ console.error("[Results] load error:",e); });
+    });
+  })();
+  </script>
 </body>
 </html>
