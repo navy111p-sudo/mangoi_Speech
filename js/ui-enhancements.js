@@ -23,8 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var lh = null;
   for (var i = 0; i < h2s.length; i++) {
     if (h2s[i].textContent.indexOf("\ub808\ubca8") > -1) {
-      lh = h2s[i];
-      break;
+      lh = h2s[i]; break;
     }
   }
   if (lh) {
@@ -37,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
     lh.parentNode.insertBefore(backLink, lh);
   }
 
-  // === Speed control: remove buttons only (keep labels), move label below slider ===
+  // === Speed control: remove buttons only, move label below slider ===
   var sc = document.getElementById("speedControl");
   if (sc) {
     var btns = sc.querySelectorAll("button");
@@ -54,19 +53,14 @@ document.addEventListener("DOMContentLoaded", function () {
   rs.textContent = "#speedControl{position:relative;padding-bottom:22px;}@media(max-width:768px){#speedControl{padding-bottom:24px;}#speedControl input[type=range]{width:100%;}}";
   document.head.appendChild(rs);
 
-  // === Auto-advance attempt when mic button clicked while feedback visible ===
-  var _origToggle = window.toggleRecording;
-  if (typeof _origToggle === "function") {
-    window.toggleRecording = function () {
-      var btnNext = document.getElementById("btnNextAttempt");
-      if (btnNext && btnNext.style.display !== "none" && typeof nextAttempt === "function") {
-        nextAttempt();
-      }
-      _origToggle();
-    };
-    var btnRec = document.getElementById("btnRecord");
-    if (btnRec) {
-      btnRec.onclick = function () { toggleRecording(); };
+  // === Auto-advance attempt: capture click on btnRecord BEFORE main.js handler ===
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest("#btnRecord") : null;
+    if (!btn && e.target.id === "btnRecord") btn = e.target;
+    if (!btn) return;
+    var btnNext = document.getElementById("btnNextAttempt");
+    if (btnNext && btnNext.style.display !== "none" && typeof nextAttempt === "function") {
+      nextAttempt();
     }
-  }
+  }, true);
 });
