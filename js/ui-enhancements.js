@@ -40,36 +40,25 @@ document.addEventListener("DOMContentLoaded", function () {
     header.after(backLink);
   }
 
-  // === Speed display: remove reset btn, center label below slider ===
+  // === Speed control: remove reset btn, move label below slider ===
   var sc = document.getElementById("speedControl");
   if (sc) {
-    // Remove 원위치 button
+    // Remove only 원위치 button(s)
     var btns = sc.querySelectorAll("button");
     for (var j = 0; j < btns.length; j++) { btns[j].remove(); }
-    // Remove 빠르게 label
-    var spans = sc.querySelectorAll("span");
-    var fastLabel = null;
-    for (var j = 0; j < spans.length; j++) {
-      if (spans[j].textContent.trim() === "\ube60\ub974\uac8c") { fastLabel = spans[j]; }
-    }
     // Find slider and speed label
     var sl = document.getElementById("ttsSpeedSlider");
     var lb = document.getElementById("ttsSpeedLabel");
     if (sl && lb) {
-      // Make speedControl a flex column with relative positioning
-      sc.style.cssText += ";position:relative;flex-wrap:wrap;justify-content:center;padding-bottom:20px;";
-      // Remove 느리게/빠르게 text spans
-      var allSpans = sc.querySelectorAll("span");
-      for (var j = 0; j < allSpans.length; j++) {
-        var t = allSpans[j].textContent.trim();
-        if (t === "\ub290\ub9ac\uac8c" || t === "\ube60\ub974\uac8c") { allSpans[j].remove(); }
-      }
-      // Style speed label centered below slider
+      // Make sc relative for positioning
+      sc.style.position = "relative";
+      sc.style.paddingBottom = "22px";
+      // Move label below slider, centered
       lb.style.cssText = "position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:12px;color:#1565c0;font-weight:700;";
     }
   }
-  // Responsive style for mobile/tablet
+  // Responsive
   var rs = document.createElement("style");
-  rs.textContent = "#speedControl{padding-bottom:22px !important;}@media(max-width:768px){#speedControl{padding-bottom:24px !important;}#speedControl input[type=range]{width:100%;}}";
+  rs.textContent = "#speedControl{position:relative;padding-bottom:22px;}@media(max-width:768px){#speedControl{padding-bottom:24px;}#speedControl input[type=range]{width:100%;}}";
   document.head.appendChild(rs);
 });
