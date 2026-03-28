@@ -197,7 +197,7 @@
       var uid = user.uid;
 
       // Load sessions
-      db.collection("sessions").where("uid","==",uid).orderBy("createdAt","desc").get()
+      db.collection("sessions").where("uid","==",uid).get()
       .then(function(snap){
         var sessions = [];
         snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; sessions.push(d); });
