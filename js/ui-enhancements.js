@@ -19,22 +19,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // === Back button left of level heading ===
-  var h2s = document.querySelectorAll("h2");
-  var lh = null;
-  for (var i = 0; i < h2s.length; i++) {
-    if (h2s[i].textContent.indexOf("레벨") > -1) { lh = h2s[i]; break; }
-  }
-  if (lh) {
-    lh.style.position = "relative";
-    var bb = document.createElement("button");
-    bb.textContent = "\u25C0";
-    bb.title = "뒤로가기";
-    bb.style.cssText = "position:absolute;left:-80px;top:50%;transform:translateY(-50%);background:transparent;border:2px solid #555;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:#555;padding:0;";
-    bb.addEventListener("mouseenter",function(){b.style.color="#000";b.style.borderColor="#000";});
-    bb.addEventListener("mouseleave",function(){b.style.color="#555";b.style.borderColor="#555";});
-    bb.addEventListener("click", function () { window.history.back(); });
-    lh.appendChild(bb);
+  // === Back link above level heading ===
+  var levelSection = document.querySelector(".practice-section, .level-select, [class*=level]") || document.querySelector("main > div");
+  if (!levelSection) { var secs = document.querySelectorAll("section, .card"); if (secs.length) levelSection = secs[0]; }
+  if (levelSection) {
+    var backLink = document.createElement("a");
+    backLink.href = "index.html";
+    backLink.innerHTML = "\u2190 \ub300\uc2dc\ubcf4\ub4dc\ub85c \ub3cc\uc544\uac00\uae30";
+    backLink.style.cssText = "display:inline-block;margin:12px 0 8px 0;color:#cbd5e1;font-size:14px;text-decoration:none;font-weight:500;letter-spacing:-0.3px;";
+    backLink.addEventListener("mouseenter",function(){backLink.style.color="#fff";});
+    backLink.addEventListener("mouseleave",function(){backLink.style.color="#cbd5e1";});
+    var header = document.querySelector(".header, header, [class*=header]");
+    if (header) { header.style.position = "relative"; header.appendChild(backLink); backLink.style.cssText += "position:absolute;bottom:-28px;left:20px;"; }
+    else { levelSection.parentNode.insertBefore(backLink, levelSection); }
   }
 
   // === Speed reset button ("원위치") on slider ===
