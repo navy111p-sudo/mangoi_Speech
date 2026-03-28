@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     w.appendChild(lh);
   }
 
-  // === Speed reset button (small, centered on slider) ===
+  // === Speed reset label (plain blue text, centered) ===
   var sc = document.getElementById("speedControl");
   var sl = document.getElementById("ttsSpeedSlider");
   var lb = document.getElementById("ttsSpeedLabel");
@@ -47,15 +47,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var ex = sc.querySelectorAll("button");
     for (var j = 0; j < ex.length; j++) { ex[j].remove(); }
 
-    // Make speedControl position relative for absolute positioning
     sc.style.position = "relative";
 
-    // Create small reset button overlaid at center of slider
-    var rb = document.createElement("button");
+    var rb = document.createElement("span");
     rb.textContent = "원위치";
-    rb.style.cssText = "position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#e6a800;color:#fff;border:none;border-radius:8px;padding:1px 6px;font-size:9px;cursor:pointer;font-weight:bold;opacity:0.85;z-index:2;line-height:1.3;";
-    rb.addEventListener("mouseenter", function(){ rb.style.opacity="1"; });
-    rb.addEventListener("mouseleave", function(){ rb.style.opacity="0.85"; });
+    rb.style.cssText = "position:absolute;top:-16px;left:50%;transform:translateX(-50%);color:#4a7cff;font-size:10px;cursor:pointer;font-weight:600;z-index:2;letter-spacing:-0.5px;";
     rb.addEventListener("click", function () {
       sl.value = 1;
       if (lb) lb.textContent = "1.0x";
