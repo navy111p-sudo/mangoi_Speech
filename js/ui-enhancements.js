@@ -19,19 +19,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // === Back link above level heading ===
-  var levelSection = document.querySelector(".practice-section, .level-select, [class*=level]") || document.querySelector("main > div");
-  if (!levelSection) { var secs = document.querySelectorAll("section, .card"); if (secs.length) levelSection = secs[0]; }
-  if (levelSection) {
+  // === Back link (remove old yellow button, add text link) ===
+  var h2s = document.querySelectorAll("h2");
+  var levelH2 = null;
+  for (var i = 0; i < h2s.length; i++) {
+    if (h2s[i].textContent.indexOf("\ub808\ubca8") >= 0) { levelH2 = h2s[i]; break; }
+  }
+  if (levelH2) {
+    var prev = levelH2.previousElementSibling;
+    if (prev && prev.tagName === "BUTTON") { prev.remove(); }
+  }
+  var header = document.querySelector(".header, header, [class*=header]");
+  if (header) {
     var backLink = document.createElement("a");
     backLink.href = "index.html";
-    backLink.innerHTML = "\u2190 \ub300\uc2dc\ubcf4\ub4dc\ub85c \ub3cc\uc544\uac00\uae30";
-    backLink.style.cssText = "display:inline-block;margin:12px 0 8px 0;color:#cbd5e1;font-size:14px;text-decoration:none;font-weight:500;letter-spacing:-0.3px;";
-    backLink.addEventListener("mouseenter",function(){backLink.style.color="#fff";});
-    backLink.addEventListener("mouseleave",function(){backLink.style.color="#cbd5e1";});
-    var header = document.querySelector(".header, header, [class*=header]");
-    if (header) { header.style.position = "relative"; header.appendChild(backLink); backLink.style.cssText += "position:absolute;bottom:-28px;left:20px;"; }
-    else { levelSection.parentNode.insertBefore(backLink, levelSection); }
+    backLink.textContent = "\u2190 \ub300\uc2dc\ubcf4\ub4dc\ub85c \ub3cc\uc544\uac00\uae30";
+    backLink.style.cssText = "display:block;padding:8px 20px 0;color:#cbd5e1;font-size:14px;text-decoration:none;font-weight:500;";
+    backLink.addEventListener("mouseenter",function(){this.style.color="#fff";});
+    backLink.addEventListener("mouseleave",function(){this.style.color="#cbd5e1";});
+    header.after(backLink);
   }
 
   // === Speed reset button ("원위치") on slider ===
