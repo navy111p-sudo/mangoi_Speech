@@ -8,7 +8,7 @@
  * ES5 호환 코드 (var, function, no arrow, no template literal, no async/await)
  */
 
-// =====================
+// =====================h
 // 0. 폴리필 (IE11 등 구형 브라우저 지원)
 // =====================
 
@@ -532,7 +532,7 @@ function evaluateSpeech(spokenText) {
     var pronunciationScore = calculatePronunciationScore(spokenText, state.currentSentence);
     var grammarScore = calculateGrammarScore(grammarResult.matches);
     var fluencyScore = calculateFluencyScore(spokenText, state.currentSentence);
-    var averageScore = Math.round(((pronunciationScore + grammarScore + fluencyScore) / 3) * 10) / 10;
+    var contentRelevance = Math.min(pronunciationScore, fluencyScore) / 100; if (contentRelevance < 0.1) grammarScore = Math.round(grammarScore * 0.2); else if (contentRelevance < 0.2) grammarScore = Math.round(grammarScore * 0.4); else if (contentRelevance < 0.3) grammarScore = Math.round(grammarScore * 0.6); var averageScore = Math.round(((pronunciationScore + grammarScore + fluencyScore) / 3) * 10) / 10;
     var correctedSentence = state.currentSentence
 
     var attemptResult = {
@@ -676,7 +676,7 @@ function calculatePronunciationScore(spoken, target) {
 
         // Also check exact match anywhere (for reordered words)
         for (var k = 0; k < spokenWords.length; k++) {
-            if (spokenWords[k] === targetWord) {
+            if (spokenWords[k] === targetWord && targetWord.length > 3) {
                 bestScore = 1.0;
                 bestMatch = spokenWords[k];
                 break;
@@ -700,7 +700,7 @@ function calculatePronunciationScore(spoken, target) {
     var stringSim = calculateSimilarity(spokenClean, targetClean);
 
     // Weighted combination: 70% word matching + 30% string similarity
-    var missingPen = spokenWords.length < targetWords.length * 0.5 ? 0.4 : (spokenWords.length < targetWords.length * 0.75 ? 0.7 : 1.0); var rawScore = (avgScore * 0.8 + stringSim * 0.2) * missingPen * 100;
+    var missingPen = spokenWords.length < targetWords.length * 0.5 ? 0.4 : (spokenWords.length < targetWords.length * 0.75 ? 0.7 : 1.0); var rawScore = (avgScore * 0.8 + stringSim * 0.2) * missingPen * 100; if (stringSim < 0.2 && avgScore < 0.3) rawScore = Math.min(rawScore, 5); else if (stringSim < 0.3 && avgScore < 0.4) rawScore = Math.min(rawScore, 15); else if (stringSim < 0.4 && avgScore < 0.5) rawScore = Math.min(rawScore, 25);
 
     return Math.round(Math.min(100, Math.max(0, rawScore)));
 }
@@ -833,7 +833,7 @@ function calculateFluencyScore(spoken, target) {
     else if (lengthRatio < 0.8) lengthScore = 0.8;
     else if (lengthRatio > 1.5) lengthScore = 0.85;
 
-    var rawScore = (completeness * 40 + orderScore * 25 + speedScore * 15 + lengthScore * 20);
+    if (completeness < 0.15) return Math.round(Math.min(8, completeness * 100)); if (completeness < 0.3) { speedScore *= 0.3; lengthScore *= 0.3; orderScore *= 0.2; } else if (completeness < 0.5) { speedScore *= 0.6; lengthScore *= 0.6; orderScore *= 0.5; } var rawScore = (completeness * 40 + orderScore * 25 + speedScore * 15 + lengthScore * 20);
     return Math.round(Math.min(100, Math.max(0, rawScore)));
 }
 
