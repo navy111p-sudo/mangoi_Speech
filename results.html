@@ -202,7 +202,8 @@
         var sessions = [];
         snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; sessions.push(d); });
 
-        var total = sessions.length;
+        sessions.sort(function(a,b){ var ta=a.createdAt&&a.createdAt.toDate?a.createdAt.toDate().getTime():0; var tb=b.createdAt&&b.createdAt.toDate?b.createdAt.toDate().getTime():0; return tb-ta; });
+            var total = sessions.length;
         var totalScore = 0;
         var pron=0, gram=0, flu=0, scoreCount=0;
 
@@ -283,7 +284,7 @@
             bars[i].setAttribute("data-value",sc+"\uC810");
             if(last7[i].createdAt&&last7[i].createdAt.toDate){
               var dd=last7[i].createdAt.toDate();
-              labels[i].textContent=dayNames[dd.getDay()];
+              labels[i].textContent=(dd.getMonth()+1)+"/"+dd.getDate();
             }
           } else {
             bars[i].style.height="0%";
