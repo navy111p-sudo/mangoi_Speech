@@ -30,9 +30,9 @@ document.addEventListener("DOMContentLoaded", function () {
     var bb = document.createElement("button");
     bb.textContent = "\u25C0";
     bb.title = "뒤로가기";
-    bb.style.cssText = "position:absolute;left:-36px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:20px;cursor:pointer;color:#555;padding:4px 8px;";
-    bb.addEventListener("mouseenter", function () { bb.style.color = "#000"; });
-    bb.addEventListener("mouseleave", function () { bb.style.color = "#555"; });
+    bb.style.cssText = "position:absolute;left:-40px;top:50%;transform:translateY(-50%);background:transparent;border:2px solid #555;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:#555;padding:0;";
+    bb.addEventListener("mouseenter",function(){b.style.color="#000";b.style.borderColor="#000";});
+    bb.addEventListener("mouseleave",function(){b.style.color="#555";b.style.borderColor="#555";});
     bb.addEventListener("click", function () { window.history.back(); });
     lh.appendChild(bb);
   }
