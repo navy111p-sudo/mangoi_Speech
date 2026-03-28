@@ -41,26 +41,35 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // === Speed display: remove reset btn, center label below slider ===
-  var sc = document.querySelector(".speed-control");
+  var sc = document.getElementById("speedControl");
   if (sc) {
-    // Remove any existing reset buttons/labels
-    var resets = sc.querySelectorAll("button, .reset-label");
-    for (var j = 0; j < resets.length; j++) { resets[j].remove(); }
-    // Find slider and label
-    var sl = sc.querySelector('input[type="range"]');
-    var lb = document.getElementById("ttsSpeedLabel") || sc.querySelector("span");
+    // Remove 원위치 button
+    var btns = sc.querySelectorAll("button");
+    for (var j = 0; j < btns.length; j++) { btns[j].remove(); }
+    // Remove 빠르게 label
+    var spans = sc.querySelectorAll("span");
+    var fastLabel = null;
+    for (var j = 0; j < spans.length; j++) {
+      if (spans[j].textContent.trim() === "\ube60\ub974\uac8c") { fastLabel = spans[j]; }
+    }
+    // Find slider and speed label
+    var sl = document.getElementById("ttsSpeedSlider");
+    var lb = document.getElementById("ttsSpeedLabel");
     if (sl && lb) {
-      // Wrap slider in a relative container
-      var wrap = sl.parentElement;
-      wrap.style.position = "relative";
-      // Style the label: centered below the slider bar
-      lb.style.cssText = "position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:#1565c0;font-weight:700;pointer-events:none;";
-      // Move label inside the wrap if not already
-      if (lb.parentElement !== wrap) { wrap.appendChild(lb); }
+      // Make speedControl a flex column with relative positioning
+      sc.style.cssText += ";position:relative;flex-wrap:wrap;justify-content:center;padding-bottom:20px;";
+      // Remove 느리게/빠르게 text spans
+      var allSpans = sc.querySelectorAll("span");
+      for (var j = 0; j < allSpans.length; j++) {
+        var t = allSpans[j].textContent.trim();
+        if (t === "\ub290\ub9ac\uac8c" || t === "\ube60\ub974\uac8c") { allSpans[j].remove(); }
+      }
+      // Style speed label centered below slider
+      lb.style.cssText = "position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:12px;color:#1565c0;font-weight:700;";
     }
   }
-  // === Responsive: speed control padding for mobile/tablet ===
-  var style = document.createElement("style");
-  style.textContent = "@media(max-width:768px){.speed-control{padding-bottom:22px !important;margin-bottom:8px !important;}}";
-  document.head.appendChild(style);
+  // Responsive style for mobile/tablet
+  var rs = document.createElement("style");
+  rs.textContent = "#speedControl{padding-bottom:22px !important;}@media(max-width:768px){#speedControl{padding-bottom:24px !important;}#speedControl input[type=range]{width:100%;}}";
+  document.head.appendChild(rs);
 });
