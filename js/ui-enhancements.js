@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     w.appendChild(lh);
   }
 
-  // === Speed reset (red circle, blue text) ===
+  // === Speed reset (inside box, centered on bar) ===
   var sc = document.getElementById("speedControl");
   var sl = document.getElementById("ttsSpeedSlider");
   var lb = document.getElementById("ttsSpeedLabel");
@@ -46,18 +46,23 @@ document.addEventListener("DOMContentLoaded", function () {
     var ex = sc.querySelectorAll("button, .reset-label");
     for (var j = 0; j < ex.length; j++) { ex[j].remove(); }
 
-    sc.style.position = "relative";
+    // Wrap slider in a relative container
+    var wrap = document.createElement("div");
+    wrap.style.cssText = "position:relative;flex:1;display:flex;align-items:center;";
+    sl.parentNode.insertBefore(wrap, sl);
+    wrap.appendChild(sl);
 
+    // Add reset label centered above the slider bar
     var rb = document.createElement("span");
     rb.className = "reset-label";
     rb.textContent = "원위치";
-    rb.style.cssText = "position:absolute;top:-18px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid #e53935;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#1565c0;font-size:9px;cursor:pointer;font-weight:700;z-index:2;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,0.12);";
+    rb.style.cssText = "position:absolute;top:-15px;left:50%;transform:translateX(-50%);color:#1565c0;font-size:9px;cursor:pointer;font-weight:600;z-index:2;letter-spacing:-0.3px;";
     rb.addEventListener("click", function () {
       sl.value = 1;
       if (lb) lb.textContent = "1.0x";
       sl.dispatchEvent(new Event("input"));
     });
-    sc.appendChild(rb);
+    wrap.appendChild(rb);
   }
 });
 
