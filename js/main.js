@@ -663,8 +663,8 @@ function calculatePronunciationScore(spoken, target) {
         var bestMatch = '';
 
         // Search in a window around the expected position
-        var searchStart = Math.max(0, i - 2);
-        var searchEnd = Math.min(spokenWords.length, i + 3);
+        var searchStart = Math.max(0, i - 1);
+        var searchEnd = Math.min(spokenWords.length, i + 2);
 
         for (var j = searchStart; j < searchEnd; j++) {
             var score = getWordSimilarity(spokenWords[j], targetWord);
@@ -700,7 +700,7 @@ function calculatePronunciationScore(spoken, target) {
     var stringSim = calculateSimilarity(spokenClean, targetClean);
 
     // Weighted combination: 70% word matching + 30% string similarity
-    var rawScore = (avgScore * 0.7 + stringSim * 0.3) * 100;
+    var missingPen = spokenWords.length < targetWords.length * 0.5 ? 0.4 : (spokenWords.length < targetWords.length * 0.75 ? 0.7 : 1.0); var rawScore = (avgScore * 0.8 + stringSim * 0.2) * missingPen * 100;
 
     return Math.round(Math.min(100, Math.max(0, rawScore)));
 }
@@ -721,7 +721,7 @@ function getWordSimilarity(word1, word2) {
     if (word1.substring(0, 2) === word2.substring(0, 2)) startBonus = 0.15;
 
     // Combine: 50% edit distance + 35% phonetic + 15% start bonus
-    return Math.min(1.0, editSim * 0.5 + phoneSim * 0.35 + startBonus);
+    var sim = Math.min(1.0, editSim * 0.5 + phoneSim * 0.35 + startBonus); return sim < 0.5 ? 0 : (sim < 0.7 ? sim * 0.6 : sim);
 }
 
 // Levenshtein distance
@@ -793,10 +793,10 @@ function calculateGrammarScore(matches) {
     for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
         var type = (m.rule && m.rule.category && m.rule.category.id) || '';
-        if (type.indexOf('GRAMMAR') !== -1) totalPenalty += 12;
-        else if (type.indexOf('TYPOS') !== -1) totalPenalty += 5;
+        if (type.indexOf('GRAMMAR') !== -1) totalPenalty += 20;
+        else if (type.indexOf('TYPOS') !== -1) totalPenalty += 12;
         else if (type.indexOf('PUNCTUATION') !== -1) totalPenalty += 3;
-        else totalPenalty += 8;
+        else totalPenalty += 15;
     }
     return Math.max(0, Math.round(100 - totalPenalty));
 }
@@ -809,7 +809,7 @@ function calculateFluencyScore(spoken, target) {
     if (targetWords.length === 0) return 0;
 
     // Completeness: how many target words were spoken
-    var completeness = Math.min(1, spokenWords.length / targetWords.length);
+    var spkL=spokenWords.map(function(w){return w.toLowerCase();}); var tgtL=targetWords.map(function(w){return w.toLowerCase();}); var mc=0; var used={}; for(var ci=0;ci<tgtL.length;ci++){for(var cj=0;cj<spkL.length;cj++){if(!used[cj]&&spkL[cj]===tgtL[ci]){mc++;used[cj]=true;break;}}} var completeness = mc / targetWords.length;
 
     // Word order: check if words appear in similar order
     var orderScore = calculateWordOrder(spokenWords, targetWords);
@@ -820,7 +820,7 @@ function calculateFluencyScore(spoken, target) {
         var durationSec = (Date.now() - state.recordingStartTime) / 1000;
         var wordsPerMin = (spokenWords.length / durationSec) * 60;
         // Natural English speech: 120-180 wpm
-        if (wordsPerMin < 60) speedScore = 0.6;
+        if (wordsPerMin < 40) speedScore = 0.3; else if (wordsPerMin < 60) speedScore = 0.5;
         else if (wordsPerMin < 100) speedScore = 0.8;
         else if (wordsPerMin <= 200) speedScore = 1.0;
         else speedScore = 0.85; // too fast
@@ -829,11 +829,11 @@ function calculateFluencyScore(spoken, target) {
     // Length penalty: speaking too few or too many words
     var lengthRatio = spokenWords.length / targetWords.length;
     var lengthScore = 1.0;
-    if (lengthRatio < 0.5) lengthScore = 0.5;
+    if (lengthRatio < 0.3) lengthScore = 0.2; else if (lengthRatio < 0.5) lengthScore = 0.4;
     else if (lengthRatio < 0.8) lengthScore = 0.8;
     else if (lengthRatio > 1.5) lengthScore = 0.85;
 
-    var rawScore = (completeness * 30 + orderScore * 30 + speedScore * 20 + lengthScore * 20);
+    var rawScore = (completeness * 40 + orderScore * 25 + speedScore * 15 + lengthScore * 20);
     return Math.round(Math.min(100, Math.max(0, rawScore)));
 }
 
