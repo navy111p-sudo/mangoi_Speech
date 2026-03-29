@@ -699,6 +699,10 @@ a { text-decoration: none; color: inherit; }
   .retro-tv__antenna-left, .retro-tv__antenna-right { height: 14px; width: 2px; }
   .retro-tv__legs { width: 80px; }
   .retro-tv__leg { height: 8px; width: 2px; }
+     .practice { padding: 1rem 0.75rem !important; }
+     .practice h2 { white-space: nowrap !important; font-size: 1rem !important; }
+     #categoryBtns { flex-wrap: nowrap !important; gap: 0.4rem !important; max-width: 100% !important; }
+     #categoryBtns button { min-width: 0 !important; padding: 0.6rem 0.5rem !important; font-size: 0.85rem !important; }
   .mascot-sound-btn { font-size: 0.6rem; padding: 0.15rem 0.5rem; }
   .kakao-chat-btn { bottom: 1rem; left: 1rem; padding: 0.5rem 0.8rem; font-size: 0.75rem; }
 }
