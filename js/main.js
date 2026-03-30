@@ -401,6 +401,35 @@ function setupSpeechRecognition() {
   state.recognition.onerror = handleRecognitionError;
   state.recognition.onstart = function () {
     state.recordingStartTime = Date.now();
+    // 음성인식이 마이크를 확보한 후 MediaRecorder 시작 (재생용)
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        window._audioStream = stream;
+        window._audioChunks = [];
+        try {
+          window._mediaRecorder = new MediaRecorder(stream);
+          window._mediaRecorder.ondataavailable = function (e) {
+            if (e.data && e.data.size > 0) window._audioChunks.push(e.data);
+          };
+          window._mediaRecorder.onstop = function () {
+            if (window._audioChunks.length > 0) {
+              var blob = new Blob(window._audioChunks, { type: "audio/webm" });
+              if (window._recordedAudioUrl) URL.revokeObjectURL(window._recordedAudioUrl);
+              window._recordedAudioUrl = URL.createObjectURL(blob);
+              if (typeof window._showPlaybackUI === "function") window._showPlaybackUI();
+            }
+            if (window._audioStream) {
+              window._audioStream.getTracks().forEach(function (t) { t.stop(); });
+            }
+          };
+          window._mediaRecorder.start();
+        } catch (e) {
+          console.warn("MediaRecorder 생성 실패:", e);
+        }
+      }).catch(function (err) {
+        console.warn("MediaRecorder용 마이크 접근 실패 (음성인식은 정상):", err);
+      });
+    }
   };
 }
 
@@ -457,6 +486,10 @@ function stopRecording() {
   if (state.recognition) {
     state.recognition.stop();
   }
+  // MediaRecorder 중지
+  if (window._mediaRecorder && window._mediaRecorder.state === "recording") {
+    try { window._mediaRecorder.stop(); } catch (e) {}
+  }
 }
 
 function handleRecognitionResult(event) {
@@ -485,6 +518,10 @@ function handleRecognitionEnd() {
   if (DOM.btnRecord) DOM.btnRecord.classList.remove("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
   if (DOM.recognizedText) DOM.recognizedText.style.opacity = "1";
+  // MediaRecorder 정리 (재생용 녹음 저장)
+  if (window._mediaRecorder && window._mediaRecorder.state === "recording") {
+    try { window._mediaRecorder.stop(); } catch (e) {}
+  }
 
   var spokenText = DOM.recognizedText ? DOM.recognizedText.textContent.trim() : "";
   if (spokenText && spokenText !== "음성 인시 결과가 여기에 표시됩니다") {
@@ -507,6 +544,10 @@ function handleRecognitionError(event) {
   state.isRecording = false;
   if (DOM.btnRecord) DOM.btnRecord.classList.remove("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
+  // MediaRecorder 정리
+  if (window._mediaRecorder && window._mediaRecorder.state === "recording") {
+    try { window._mediaRecorder.stop(); } catch (e) {}
+  }
   var errorMessage = "";
   switch (event.error) {
     case "no-speech":
