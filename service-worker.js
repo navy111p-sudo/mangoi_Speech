@@ -1,4 +1,4 @@
-var CACHE_NAME = "mangoi-speech-v6";
+var CACHE_NAME = "mangoi-speech-v7";
 var STATIC_ASSETS = [
   "/", "/index.html", "/css/style.css", "/js/sentences.js", "/js/main.js",
   "/js/firebase-config.js", "/js/firebase-auth.js", "/js/firebase-db.js", "/manifest.json"
