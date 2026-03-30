@@ -443,10 +443,54 @@ function startRecording() {
     DOM.recognizedText.classList.remove("recorder__text--empty");
   }
   if (DOM.feedbackSection) DOM.feedbackSection.classList.remove("is-visible");
-  try {
-    state.recognition.start();
-  } catch (e) {
-    console.warn("음성인식 시작 에러:", e);
+
+  // MediaRecorder로 음성 녹음 (재생용) - 마이크를 먼저 확보한 후 음성인식 시작
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      window._audioStream = stream;
+      window._audioChunks = [];
+      try {
+        window._mediaRecorder = new MediaRecorder(stream);
+        window._mediaRecorder.ondataavailable = function (e) {
+          if (e.data.size > 0) window._audioChunks.push(e.data);
+        };
+        window._mediaRecorder.onstop = function () {
+          var blob = new Blob(window._audioChunks, { type: "audio/webm" });
+          if (window._recordedAudioUrl) URL.revokeObjectURL(window._recordedAudioUrl);
+          window._recordedAudioUrl = URL.createObjectURL(blob);
+          // 재생 UI 표시
+          if (typeof window._showPlaybackUI === "function") window._showPlaybackUI();
+          // 스트림 정리
+          if (window._audioStream) {
+            window._audioStream.getTracks().forEach(function (t) { t.stop(); });
+          }
+        };
+        window._mediaRecorder.start();
+      } catch (e) {
+        console.warn("MediaRecorder 생성 실패:", e);
+      }
+      // 마이크 확보 후 음성인식 시작
+      try {
+        state.recognition.start();
+      } catch (e) {
+        console.warn("음성인식 시작 에러:", e);
+      }
+    }).catch(function (err) {
+      console.warn("마이크 접근 실패, 음성인식만 시도:", err);
+      // 마이크 접근 실패해도 음성인식은 시도
+      try {
+        state.recognition.start();
+      } catch (e) {
+        console.warn("음성인식 시작 에러:", e);
+      }
+    });
+  } else {
+    // getUserMedia 미지원 시 음성인식만 실행
+    try {
+      state.recognition.start();
+    } catch (e) {
+      console.warn("음성인식 시작 에러:", e);
+    }
   }
 }
 
@@ -456,6 +500,10 @@ function stopRecording() {
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
   if (state.recognition) {
     state.recognition.stop();
+  }
+  // MediaRecorder 중지
+  if (window._mediaRecorder && window._mediaRecorder.state !== "inactive") {
+    try { window._mediaRecorder.stop(); } catch (e) { console.warn("MediaRecorder stop 에러:", e); }
   }
 }
 
@@ -485,6 +533,10 @@ function handleRecognitionEnd() {
   if (DOM.btnRecord) DOM.btnRecord.classList.remove("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
   if (DOM.recognizedText) DOM.recognizedText.style.opacity = "1";
+  // MediaRecorder도 중지
+  if (window._mediaRecorder && window._mediaRecorder.state !== "inactive") {
+    try { window._mediaRecorder.stop(); } catch (e) {}
+  }
 
   var spokenText = DOM.recognizedText ? DOM.recognizedText.textContent.trim() : "";
   if (spokenText && spokenText !== "음성 인시 결과가 여기에 표시됩니다") {
@@ -507,6 +559,10 @@ function handleRecognitionError(event) {
   state.isRecording = false;
   if (DOM.btnRecord) DOM.btnRecord.classList.remove("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
+  // MediaRecorder도 중지
+  if (window._mediaRecorder && window._mediaRecorder.state !== "inactive") {
+    try { window._mediaRecorder.stop(); } catch (e) {}
+  }
   var errorMessage = "";
   switch (event.error) {
     case "no-speech":
