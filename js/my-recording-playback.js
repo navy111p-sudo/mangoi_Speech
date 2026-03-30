@@ -11,7 +11,7 @@
  * B) ìë ë¹ì fallback (ëª¨ë°ì¼ Chrome ë±):
  *    getUserMedia ì¤í¨ ì autoRecordFailed = true
  *    â í¼ëë°± í "ë´ ë°ì ë¹ìíê¸°" ë²í¼ íì
- *    â ë²í¼ ëë¥´ë©´ ë³ë ë¹ì (ë§ì´í¬ ì¶©ë ìì)
+ *    â ë²í¼ ëë¥´ë© ë³ë ë¹ì (ë§ì´í¬ ì¶©ë ìì)
  *
  * PC + ëª¨ë°ì¼(iOS/Android) ìì  í¸í
  * ===========================
@@ -149,7 +149,7 @@
     window.startRecording = function () {
       resetAutoState();
 
-      /* 1) ìë startRecording ë¨¼ì  (SpeechRecognition ìì) */
+      /* 1) ìë¥ startRecording ë¨¼ì  (SpeechRecognition ìì) */
       if (typeof _origStartRecording === "function") {
         _origStartRecording();
       }
@@ -190,10 +190,10 @@
         try { mediaRecorder.stop(); } catch (e) {}
         autoRecording = false;
       }
-      /* ì¤í¸ë¦¼ì 2ì´ í ì ë¦¬ (SpeechRecognition ê²°ê³¼ ìì  ëê¸°) */
+      /* ì¤í¸ë¦¼ì 2ì° í ì ë¦¬ (SpeechRecognition ê²°ê³¼ ìì  ëê¸°) */
       cleanupStream(2000);
 
-      /* ìë stopRecording ì¤í */
+      /* ìë¥ stopRecording ì¤í */
       if (typeof _origStopRecording === "function") {
         _origStopRecording();
       }
@@ -208,8 +208,25 @@
       /* ìë ë¹ì ì¤ì´ë©´ ì¤ì§ */
       if (isManualRecording) stopManualRecording();
 
-      /* ìë showFeedback ì¤í */
-      _origShowFeedback.apply(this, arguments);
+      /* ìë showFeedback ì¤í (try-catchë¡ scrollIntoView ë± ìë¬ ë°©ì´) */
+      try {
+        _origShowFeedback.apply(this, arguments);
+      } catch (e) {
+        console.warn("[rec-v5] origShowFeedback error (non-fatal):", e.message);
+      }
+
+      /* CSS í´ëì¤ ë¶ì¼ì¹ ë³´ì : main.jsë 'visible' ì¶ê°, CSSë 'is-visible' íìí  ì ìì */
+      var fs = document.querySelector("section.feedback");
+      if (fs) {
+        if (fs.classList.contains("visible") && !fs.classList.contains("is-visible")) {
+          fs.classList.add("is-visible");
+        }
+        /* ë§ì½ ë ë¤ ìì¼ë© ê°ì  íì */
+        if (getComputedStyle(fs).display === "none") {
+          fs.style.display = "block";
+        }
+      }
+
       feedbackShown = true;
 
       console.log("[rec-v5] feedback shown | blobReady=" + blobReady +
@@ -222,7 +239,7 @@
         /* A) ìë ë¹ì ì±ê³µ: ë°ë¡ íë ì´ì´ íì */
         setTimeout(injectAutoPlayer, 300);
       }
-      /* else: blob ìì§ ì¤ë¹ ìë¨ â onstopìì injectAutoPlayer í¸ì¶ ìì  */
+      /* else: blob ìì§ ì¤ë¹ ìë¨ â onstopìì injectAutoPlayer í¸ì¶ ìì  */
     };
   }
 
