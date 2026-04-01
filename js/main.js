@@ -859,7 +859,7 @@ function calculateWordOrder(spoken, target) {
 // 5. Enhanced showFeedback with word-by-word diff highlighting
 function showFeedback(result) {
     var feedbackSection = DOM.feedbackSection;
-    feedbackSection.classList.add('visible');
+    feedbackSection.classList.add('is-visible');
 
     // Show spoken text (what user said)
     DOM.originalText.innerHTML = highlightDiff(result.spokenText, state.currentSentence, 'spoken');
