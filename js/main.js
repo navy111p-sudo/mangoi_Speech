@@ -486,6 +486,11 @@ function handleRecognitionEnd() {
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
   if (DOM.recognizedText) DOM.recognizedText.style.opacity = "1";
 
+  // MediaRecorder 자동 중지 (my-recording-playback.js 연동)
+  if (window._myRecordingPlayback && typeof window._stopMediaRecorder === "function") {
+    window._stopMediaRecorder();
+  }
+
   var spokenText = DOM.recognizedText ? DOM.recognizedText.textContent.trim() : "";
   if (spokenText && spokenText !== "음성 인시 결과가 여기에 표시됩니다") {
     if (DOM.recorderStatus) DOM.recorderStatus.textContent = "분석 중...";
