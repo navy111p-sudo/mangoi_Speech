@@ -653,11 +653,21 @@
     setTimeout(initialize, 200);
   }
 
+  /* main.js에서 호출: MediaRecorder 중지 */
+  window._stopMediaRecorder = function () {
+    if (autoRecording && mediaRecorder && mediaRecorder.state !== "inactive") {
+      try { mediaRecorder.stop(); } catch (e) {}
+      autoRecording = false;
+      console.log("[rec-v8] MediaRecorder stopped via _stopMediaRecorder");
+    }
+    cleanupStream(2000);
+  };
+
   window._myRecordingPlayback = {
     getBlob: function () { return userAudioBlob; },
     getURL: function () { return userAudioURL; },
     isSupported: isRecordingSupported,
-    version: "v8-observer",
+    version: "v9-autoplay",
     debug: function () {
       return {
         autoRecording: autoRecording,
