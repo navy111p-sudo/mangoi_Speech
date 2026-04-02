@@ -136,34 +136,38 @@
      A) 자동 녹음 - startRecording 패치
      ══════════════════════════════════════ */
   function patchStartRecording() {
+    if (!window.startRecording) return;
+    var _origStartRecording = window.startRecording;
     window.startRecording = function () {
-      resetAutoState();
-      if (typeof _origStartRecording === "function") {
-        _origStartRecording();
-      }
-      if (isRecordingSupported()) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(function (stream) {
-            audioStream = stream;
-            if (startMediaRecorder(stream)) {
-              autoRecording = true;
-              console.log("[rec-v8] auto recording started");
-            } else {
-              autoRecordFailed = true;
-              blobReady = true;
-              cleanupStream(0);
-            }
-          })
-          .catch(function (err) {
-            console.log("[rec-v8] getUserMedia failed:", err.name);
-            autoRecordFailed = true;
-            blobReady = true;
-          });
+      console.log("[rec-v10] patched startRecording (mobile-fix)");
+      // 모바일 호환: getUserMedia를 먼저 호출하여 마이크 권한 확보 후 음성인식 시작
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        }).then(function (stream) {
+          console.log("[rec-v10] mic permission granted, starting recognition + recorder");
+          // 마이크 권한 확보 후 음성인식 시작
+          if (typeof _origStartRecording === "function") {
+            _origStartRecording();
+          }
+          // MediaRecorder 시작
+          startMediaRecorder(stream);
+          autoRecording = true;
+        }).catch(function (err) {
+          console.warn("[rec-v10] getUserMedia failed:", err.name, err.message);
+          // 마이크 권한 실패해도 음성인식은 시도
+          if (typeof _origStartRecording === "function") {
+            _origStartRecording();
+          }
+        });
       } else {
-        autoRecordFailed = true;
-        blobReady = true;
+        // mediaDevices 미지원 시 원래 함수만 호출
+        if (typeof _origStartRecording === "function") {
+          _origStartRecording();
+        }
       }
     };
+    console.log("[rec-v10] startRecording patched (mobile-compatible)");
   }
 
   /* ══════════════════════════════════════
@@ -667,7 +671,7 @@
     getBlob: function () { return userAudioBlob; },
     getURL: function () { return userAudioURL; },
     isSupported: isRecordingSupported,
-    version: "v9-autoplay",
+    version: "v10-mobile-fix",
     debug: function () {
       return {
         autoRecording: autoRecording,
