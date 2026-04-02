@@ -381,14 +381,32 @@
   })();
   </script>
 
-  <!-- ===== Service Worker Registration ===== -->
+  <!-- ===== Service Worker: 캐시 강제 초기화 후 재등록 ===== -->
   <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("service-worker.js").then(function (reg) {
-        console.log("[SW] 등록 성공:", reg.scope);
+      // 1. 기존 SW 모두 해제
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var promises = [];
+        for (var i = 0; i < registrations.length; i++) {
+          promises.push(registrations[i].unregister());
+        }
+        return Promise.all(promises);
+      }).then(function () {
+        // 2. 모든 캐시 삭제
+        return caches.keys().then(function (names) {
+          return Promise.all(names.map(function (name) {
+            console.log("[SW] 캐시 삭제:", name);
+            return caches.delete(name);
+          }));
+        });
+      }).then(function () {
+        // 3. 새 SW 등록
+        return navigator.serviceWorker.register("service-worker.js?v=5");
+      }).then(function (reg) {
+        console.log("[SW] 재등록 성공:", reg.scope);
       }).catch(function (err) {
-        console.warn("[SW] 등록 실패:", err);
+        console.warn("[SW] 초기화 실패:", err);
       });
     });
   }
