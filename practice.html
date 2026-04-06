@@ -276,12 +276,44 @@
   </div>
 
   <!-- ===== 카카오톡 상담 ===== -->
-  <a class="kakao-chat-btn" href="https://pf.kakao.com/_xnxaxfxj/chat" target="_blank" rel="noopener">
+  <a class="kakao-chat-btn" href="javascript:void(0);" id="kakaoChannelBtn" rel="noopener">
     <svg class="kakao-chat-btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 3C6.477 3 2 6.463 2 10.714c0 2.738 1.823 5.137 4.564 6.476-.145.53-.936 3.41-.968 3.61 0 0-.02.166.088.23.108.063.235.03.235.03.31-.043 3.595-2.356 4.16-2.774.62.09 1.26.137 1.921.137 5.523 0 10-3.463 10-7.714C22 6.463 17.523 3 12 3z"/>
     </svg>
     <span>카톡상담</span>
   </a>
+  <!-- 카카오 채널 채팅 연결 스크립트 -->
+  <script>
+  (function(){
+    var kakaoBtn = document.getElementById("kakaoChannelBtn");
+    if(!kakaoBtn) return;
+    kakaoBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      // 카카오톡 앱 딥링크 시도 후 웹으로 폴백
+      var channelId = "_xnxaxfxj";
+      var chatUrl = "https://pf.kakao.com/" + channelId + "/chat";
+      var kakaoAppUrl = "kakaotalk://plusfriend/chat/" + channelId;
+
+      // 모바일인지 확인
+      var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if(isMobile){
+        // 모바일: 카카오톡 앱 딥링크 시도
+        var start = Date.now();
+        window.location.href = kakaoAppUrl;
+        setTimeout(function(){
+          // 앱이 열리지 않으면 (2초 이내 돌아오면) 웹으로 이동
+          if(Date.now() - start < 2500){
+            window.open(chatUrl, "_blank");
+          }
+        }, 2000);
+      } else {
+        // PC: 웹 브라우저로 열기
+        window.open(chatUrl, "_blank");
+      }
+    });
+  })();
+  </script>
 
   <!-- ===== PWA Install Button ===== -->
   <button id="btnInstallApp" style="display:none;">앱 설치</button>
@@ -299,8 +331,8 @@
   <script src="js/sentences.js?v=7"></script>
     <script src="js/siu-basic-sentences.js?v=1"></script>
     <script src="js/siu-advance-sentences.js?v=1"></script>
-    <script src="js/phonics-sentences.js?v=1"></script>
-  <script src="js/main.js?v=11"></script>
+    <script src="js/phonics-sentences.js?v=2"></script>
+  <script src="js/main.js?v=12"></script>
     <script src="js/category-ui.js?v=3"></script>
     <script src="js/fix-loading.js"></script>
     
@@ -402,7 +434,7 @@
         });
       }).then(function () {
         // 3. 새 SW 등록
-        return navigator.serviceWorker.register("service-worker.js?v=5");
+        return navigator.serviceWorker.register("service-worker.js?v=6");
       }).then(function (reg) {
         console.log("[SW] 재등록 성공:", reg.scope);
       }).catch(function (err) {

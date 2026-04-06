@@ -192,125 +192,183 @@
   <script src="js/firebase-config.js"></script>
   <script>
   (function(){
-    auth.onAuthStateChanged(function(user){
-      if(!user) return;
-      var uid = user.uid;
+    // 로딩 상태 표시
+    var hl=document.getElementById("historyList");
+    if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;font-size:0.85rem;">데이터를 불러오는 중...</div>';
 
-      // Load sessions
-      db.collection("sessions").where("uid","==",uid).get()
-      .then(function(snap){
-        var sessions = [];
-        snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; sessions.push(d); });
+    // Firebase auth 준비 대기 (auth가 아직 로드되지 않았을 수 있음)
+    var waitAuth = setInterval(function(){
+      if(typeof auth !== "undefined" && typeof db !== "undefined"){
+        clearInterval(waitAuth);
+        initResults();
+      }
+    }, 200);
 
-        sessions.sort(function(a,b){ var ta=a.createdAt&&a.createdAt.toDate?a.createdAt.toDate().getTime():0; var tb=b.createdAt&&b.createdAt.toDate?b.createdAt.toDate().getTime():0; return tb-ta; });
-            var total = sessions.length;
-        var totalScore = 0;
-        var pron=0, gram=0, flu=0, scoreCount=0;
+    // 5초 후에도 로드 안 되면 타임아웃
+    setTimeout(function(){ clearInterval(waitAuth); }, 5000);
 
-        for(var i=0;i<sessions.length;i++){
-          totalScore += sessions[i].bestScore||0;
-          var atts = sessions[i].attempts||[];
-          for(var j=0;j<atts.length;j++){
-            if(atts[j].scores){
-              pron += atts[j].scores.pronunciation||0;
-              gram += atts[j].scores.grammar||0;
-              flu += atts[j].scores.fluency||0;
-              scoreCount++;
+    function initResults(){
+      auth.onAuthStateChanged(function(user){
+        if(!user){
+          // 로그인 안 된 경우 안내 메시지 표시
+          var hl=document.getElementById("historyList");
+          if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;font-size:0.85rem;">로그인 후 학습 기록을 확인할 수 있습니다.<br><a href="login.html" style="color:#ff9ff3;text-decoration:underline;margin-top:8px;display:inline-block;">로그인하기</a></div>';
+          return;
+        }
+        var uid = user.uid;
+
+        // Load sessions - orderBy로 정렬하여 가져오기
+        db.collection("sessions").where("uid","==",uid).get()
+        .then(function(snap){
+          var sessions = [];
+          snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; sessions.push(d); });
+
+          if(sessions.length === 0){
+            var hl=document.getElementById("historyList");
+            if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;font-size:0.85rem;">아직 학습 기록이 없습니다.<br><a href="practice.html" style="color:#ff9ff3;text-decoration:underline;margin-top:8px;display:inline-block;">연습 시작하기</a></div>';
+            return;
+          }
+
+          sessions.sort(function(a,b){ var ta=a.createdAt&&a.createdAt.toDate?a.createdAt.toDate().getTime():0; var tb=b.createdAt&&b.createdAt.toDate?b.createdAt.toDate().getTime():0; return tb-ta; });
+          var total = sessions.length;
+          var totalScore = 0;
+          var validScoreCount = 0;
+          var pron=0, gram=0, flu=0, scoreCount=0;
+
+          for(var i=0;i<sessions.length;i++){
+            // bestScore 또는 attempts에서 점수 추출
+            var bs = sessions[i].bestScore;
+            if(typeof bs === "number" && bs > 0){
+              totalScore += bs;
+              validScoreCount++;
+            }
+            var atts = sessions[i].attempts||[];
+            for(var j=0;j<atts.length;j++){
+              var sc = atts[j].scores;
+              if(sc){
+                var p = parseFloat(sc.pronunciation)||0;
+                var g = parseFloat(sc.grammar)||0;
+                var f = parseFloat(sc.fluency)||0;
+                if(p > 0 || g > 0 || f > 0){
+                  pron += p; gram += g; flu += f;
+                  scoreCount++;
+                }
+              }
+            }
+            // bestScore가 없으면 attempts에서 최고 평균 계산
+            if((typeof bs !== "number" || bs === 0) && atts.length > 0){
+              var best = 0;
+              for(var j=0;j<atts.length;j++){
+                if(atts[j].scores){
+                  var avg = (parseFloat(atts[j].scores.pronunciation)||0 + parseFloat(atts[j].scores.grammar)||0 + parseFloat(atts[j].scores.fluency)||0) / 3;
+                  if(avg > best) best = avg;
+                }
+              }
+              if(best > 0){ totalScore += Math.round(best); validScoreCount++; }
             }
           }
-        }
 
-        var avgScore = total>0 ? Math.round(totalScore/total) : 0;
-        var avgPron = scoreCount>0 ? Math.round(pron/scoreCount) : 0;
-        var avgGram = scoreCount>0 ? Math.round(gram/scoreCount) : 0;
-        var avgFlu = scoreCount>0 ? Math.round(flu/scoreCount) : 0;
-        var estMinutes = total * 3;
+          var avgScore = validScoreCount>0 ? Math.round(totalScore/validScoreCount) : 0;
+          var avgPron = scoreCount>0 ? Math.round(pron/scoreCount) : 0;
+          var avgGram = scoreCount>0 ? Math.round(gram/scoreCount) : 0;
+          var avgFlu = scoreCount>0 ? Math.round(flu/scoreCount) : 0;
+          var estMinutes = total * 3;
 
-        // Update stats
-        var el;
-        el=document.getElementById("statSessions"); if(el) el.textContent=total;
-        el=document.getElementById("statAvgScore"); if(el) el.textContent=avgScore+"\uC810";
-        el=document.getElementById("statTime"); if(el) el.textContent=estMinutes+"\uBD84";
+          // Update stats
+          var el;
+          el=document.getElementById("statSessions"); if(el) el.textContent=total;
+          el=document.getElementById("statAvgScore"); if(el) el.textContent=avgScore+"\uC810";
+          el=document.getElementById("statTime"); if(el) el.textContent=estMinutes+"\uBD84";
 
-        // Streak calculation
-        var days={};
-        for(var i=0;i<sessions.length;i++){
-          var ts=sessions[i].createdAt;
-          if(ts&&ts.toDate){
-            var d=ts.toDate();
-            days[d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()]=true;
-          }
-        }
-        var streak=0;
-        var today=new Date();
-        for(var k=0;k<365;k++){
-          var check=new Date(today); check.setDate(check.getDate()-k);
-          var key=check.getFullYear()+"-"+(check.getMonth()+1)+"-"+check.getDate();
-          if(days[key]) streak++; else if(k>0) break;
-        }
-        el=document.getElementById("statStreak"); if(el) el.textContent=streak+"\uC77C";
-
-        // Radar chart
-        var cx=150, cy=150, r=120;
-        function radarPt(pct,angle){
-          var a=angle*Math.PI/180;
-          var dist=r*(pct/100);
-          return [cx+dist*Math.sin(a), cy-dist*Math.cos(a)];
-        }
-        var p1=radarPt(avgPron,0), p2=radarPt(avgGram,120), p3=radarPt(avgFlu,240);
-        var pts=p1[0]+","+p1[1]+" "+p2[0]+","+p2[1]+" "+p3[0]+","+p3[1];
-        el=document.getElementById("radarArea"); if(el) el.setAttribute("points",pts);
-        el=document.getElementById("radarDot1"); if(el){el.setAttribute("cx",p1[0]);el.setAttribute("cy",p1[1]);}
-        el=document.getElementById("radarDot2"); if(el){el.setAttribute("cx",p2[0]);el.setAttribute("cy",p2[1]);}
-        el=document.getElementById("radarDot3"); if(el){el.setAttribute("cx",p3[0]);el.setAttribute("cy",p3[1]);}
-        el=document.getElementById("radarVal1"); if(el) el.textContent=avgPron+"%";
-        el=document.getElementById("radarVal2"); if(el) el.textContent=avgGram+"%";
-        el=document.getElementById("radarVal3"); if(el) el.textContent=avgFlu+"%";
-
-        // Comment scores
-        el=document.getElementById("commentScore1"); if(el){ el.textContent=avgPron; el.className="comment-score "+(avgPron>=80?"high":avgPron>=60?"mid":"low"); }
-        el=document.getElementById("commentScore2"); if(el){ el.textContent=avgGram; el.className="comment-score "+(avgGram>=80?"high":avgGram>=60?"mid":"low"); }
-        el=document.getElementById("commentScore3"); if(el){ el.textContent=avgFlu; el.className="comment-score "+(avgFlu>=80?"high":avgFlu>=60?"mid":"low"); }
-
-        // Bar chart - last 7 sessions
-        var last7=sessions.slice(0,7).reverse();
-        var dayNames=["\uC77C","\uC6D4","\uD654","\uC218","\uBAA9","\uAE08","\uD1A0"];
-        var bars=document.querySelectorAll(".chart-bar");
-        var labels=document.querySelectorAll(".chart-label");
-        for(var i=0;i<bars.length;i++){
-          if(i<last7.length){
-            var sc=last7[i].bestScore||0;
-            bars[i].style.height=Math.max(sc,4)+"%";
-            bars[i].setAttribute("data-value",sc+"\uC810");
-            if(last7[i].createdAt&&last7[i].createdAt.toDate){
-              var dd=last7[i].createdAt.toDate();
-              labels[i].textContent=(dd.getMonth()+1)+"/"+dd.getDate();
+          // Streak calculation
+          var days={};
+          for(var i=0;i<sessions.length;i++){
+            var ts=sessions[i].createdAt;
+            if(ts&&ts.toDate){
+              var d=ts.toDate();
+              days[d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()]=true;
             }
-          } else {
-            bars[i].style.height="0%";
-            bars[i].setAttribute("data-value","");
           }
-        }
+          var streak=0;
+          var today=new Date();
+          for(var k=0;k<365;k++){
+            var check=new Date(today); check.setDate(check.getDate()-k);
+            var key=check.getFullYear()+"-"+(check.getMonth()+1)+"-"+check.getDate();
+            if(days[key]) streak++; else if(k>0) break;
+          }
+          el=document.getElementById("statStreak"); if(el) el.textContent=streak+"\uC77C";
 
-        // History list
-        var hl=document.getElementById("historyList");
-        if(hl && sessions.length>0){
-          hl.innerHTML="";
-          var show=Math.min(sessions.length,5);
-          for(var i=0;i<show;i++){
-            var s=sessions[i];
-            var sc=s.bestScore||0;
-            var cls=sc>=80?"score-high":"score-mid";
-            var dt="";
-            if(s.createdAt&&s.createdAt.toDate){
-              var d=s.createdAt.toDate();
-              dt=d.getFullYear()+"."+(d.getMonth()+1<10?"0":"")+(d.getMonth()+1)+"."+(d.getDate()<10?"0":"")+d.getDate();
-            }
-            hl.innerHTML+='<div class="history-item"><div class="history-score '+cls+'">'+sc+'</div><div class="history-info"><div class="history-topic">'+(s.level||"")+' - '+(s.targetSentence||"").substring(0,30)+'</div><div class="history-date">'+dt+'</div></div></div>';
+          // Radar chart
+          var cx=150, cy=150, r=120;
+          function radarPt(pct,angle){
+            var a=angle*Math.PI/180;
+            var dist=r*(pct/100);
+            return [cx+dist*Math.sin(a), cy-dist*Math.cos(a)];
           }
-        }
-      })["catch"](function(e){ console.error("[Results] load error:",e); });
-    });
+          var p1=radarPt(avgPron,0), p2=radarPt(avgGram,120), p3=radarPt(avgFlu,240);
+          var pts=p1[0]+","+p1[1]+" "+p2[0]+","+p2[1]+" "+p3[0]+","+p3[1];
+          el=document.getElementById("radarArea"); if(el) el.setAttribute("points",pts);
+          el=document.getElementById("radarDot1"); if(el){el.setAttribute("cx",p1[0]);el.setAttribute("cy",p1[1]);}
+          el=document.getElementById("radarDot2"); if(el){el.setAttribute("cx",p2[0]);el.setAttribute("cy",p2[1]);}
+          el=document.getElementById("radarDot3"); if(el){el.setAttribute("cx",p3[0]);el.setAttribute("cy",p3[1]);}
+          el=document.getElementById("radarVal1"); if(el) el.textContent=avgPron+"%";
+          el=document.getElementById("radarVal2"); if(el) el.textContent=avgGram+"%";
+          el=document.getElementById("radarVal3"); if(el) el.textContent=avgFlu+"%";
+
+          // Comment scores
+          el=document.getElementById("commentScore1"); if(el){ el.textContent=avgPron; el.className="comment-score "+(avgPron>=80?"high":avgPron>=60?"mid":"low"); }
+          el=document.getElementById("commentScore2"); if(el){ el.textContent=avgGram; el.className="comment-score "+(avgGram>=80?"high":avgGram>=60?"mid":"low"); }
+          el=document.getElementById("commentScore3"); if(el){ el.textContent=avgFlu; el.className="comment-score "+(avgFlu>=80?"high":avgFlu>=60?"mid":"low"); }
+
+          // Bar chart - last 7 sessions (애니메이션 추가)
+          var last7=sessions.slice(0,7).reverse();
+          var bars=document.querySelectorAll(".chart-bar");
+          var labels=document.querySelectorAll(".chart-label");
+          for(var i=0;i<bars.length;i++){
+            bars[i].style.transition = "height 0.8s ease " + (i*0.1) + "s";
+            if(i<last7.length){
+              var sc=last7[i].bestScore||0;
+              sc = Math.round(sc);
+              bars[i].style.height=Math.max(sc,4)+"%";
+              bars[i].setAttribute("data-value",sc+"\uC810");
+              if(last7[i].createdAt&&last7[i].createdAt.toDate){
+                var dd=last7[i].createdAt.toDate();
+                labels[i].textContent=(dd.getMonth()+1)+"/"+dd.getDate();
+              }
+            } else {
+              bars[i].style.height="0%";
+              bars[i].setAttribute("data-value","");
+              labels[i].textContent="-";
+            }
+          }
+
+          // History list
+          var hl=document.getElementById("historyList");
+          if(hl && sessions.length>0){
+            hl.innerHTML="";
+            var show=Math.min(sessions.length,10);
+            for(var i=0;i<show;i++){
+              var s=sessions[i];
+              var sc=Math.round(s.bestScore||0);
+              var cls=sc>=80?"score-high":sc>=50?"score-mid":"score-low";
+              var dt="";
+              if(s.createdAt&&s.createdAt.toDate){
+                var d=s.createdAt.toDate();
+                dt=d.getFullYear()+"."+(d.getMonth()+1<10?"0":"")+(d.getMonth()+1)+"."+(d.getDate()<10?"0":"")+d.getDate();
+              }
+              var levelText = s.levelKey || s.level || "";
+              var sentenceText = (s.targetSentence||"").substring(0,30);
+              if(sentenceText.length >= 30) sentenceText += "...";
+              hl.innerHTML+='<div class="history-item"><div class="history-score '+cls+'">'+sc+'</div><div class="history-info"><div class="history-topic">'+levelText+(sentenceText?' - '+sentenceText:'')+'</div><div class="history-date">'+dt+'</div></div></div>';
+            }
+          }
+        })["catch"](function(e){
+          console.error("[Results] load error:",e);
+          var hl=document.getElementById("historyList");
+          if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,107,107,0.7);padding:20px;font-size:0.85rem;">데이터를 불러오는 중 오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.</div>';
+        });
+      });
+    }
   })();
   </script>
 </body>

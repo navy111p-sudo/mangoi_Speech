@@ -395,12 +395,20 @@ function setupSpeechRecognition() {
   state.recognition.lang = "en-US";
   state.recognition.interimResults = true;
   state.recognition.maxAlternatives = 1;
-  state.recognition.continuous = false;
+  state.recognition.continuous = true;
   state.recognition.onresult = handleRecognitionResult;
   state.recognition.onend = handleRecognitionEnd;
   state.recognition.onerror = handleRecognitionError;
   state.recognition.onstart = function () {
     state.recordingStartTime = Date.now();
+    // 긴 문장을 위해 최대 녹음 시간을 30초로 설정
+    // (continuous=true이므로 수동으로 타임아웃 관리)
+    if (state._recordingTimeout) clearTimeout(state._recordingTimeout);
+    state._recordingTimeout = setTimeout(function() {
+      if (state.isRecording) {
+        stopRecording();
+      }
+    }, 30000);
   };
 }
 
@@ -454,6 +462,9 @@ function stopRecording() {
   state.isRecording = false;
   if (DOM.btnRecord) DOM.btnRecord.classList.remove("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
+  // 타이머 정리
+  if (state._recordingTimeout) { clearTimeout(state._recordingTimeout); state._recordingTimeout = null; }
+  if (state._silenceTimeout) { clearTimeout(state._silenceTimeout); state._silenceTimeout = null; }
   if (state.recognition) {
     state.recognition.stop();
   }
@@ -462,7 +473,8 @@ function stopRecording() {
 function handleRecognitionResult(event) {
   var interimTranscript = "";
   var finalTranscript = "";
-  for (var i = event.resultIndex; i < event.results.length; i++) {
+  // continuous 모드: 모든 결과를 누적
+  for (var i = 0; i < event.results.length; i++) {
     var result = event.results[i];
     if (result.isFinal) {
       finalTranscript += result[0].transcript;
@@ -470,14 +482,22 @@ function handleRecognitionResult(event) {
       interimTranscript += result[0].transcript;
     }
   }
-  if (finalTranscript) {
-    if (DOM.recognizedText) DOM.recognizedText.textContent = finalTranscript;
-  } else {
+  // 인식된 텍스트 표시 (최종 + 임시)
+  var displayText = finalTranscript + interimTranscript;
+  if (displayText) {
     if (DOM.recognizedText) {
-      DOM.recognizedText.textContent = interimTranscript;
-      DOM.recognizedText.style.opacity = "0.6";
+      DOM.recognizedText.textContent = displayText;
+      DOM.recognizedText.style.opacity = interimTranscript ? "0.6" : "1";
     }
   }
+  // 음성이 감지되면 자동 종료 타이머를 리셋 (사용자가 계속 말하는 동안)
+  if (state._silenceTimeout) clearTimeout(state._silenceTimeout);
+  state._silenceTimeout = setTimeout(function() {
+    // 마지막 음성 인식 후 4초 동안 추가 입력 없으면 자동 종료
+    if (state.isRecording && finalTranscript) {
+      stopRecording();
+    }
+  }, 4000);
 }
 
 function handleRecognitionEnd() {
