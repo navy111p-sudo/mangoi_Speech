@@ -7,8 +7,8 @@
   <meta name="format-detection" content="telephone=no">
   <title>Mangoi Speech Coach - 영어 발음 교정</title>
 
-  <!-- PWA meta tags -->h
-  <meta name="theme-color" content="#4F46E5">hh
+  <!-- PWA meta tags -->
+  <meta name="theme-color" content="#4F46E5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mangoi Speech">
@@ -29,6 +29,74 @@
   <link rel="stylesheet" href="css/auth-styles.css?v=1">
 </head>
 <body>
+  <!-- 🏠 홈페이지로 돌아가기 + EN/한 토글 (우측 상단 floating) -->
+  <div id="ms-top-actions" style="position:fixed;top:14px;right:14px;z-index:99999;display:flex;gap:8px;align-items:center;font-family:'Noto Sans KR',sans-serif">
+    <button id="ms-lang-toggle" onclick="msToggleLang()" title="Language"
+            style="background:rgba(20,28,48,0.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.18);color:#f1f5ff;padding:7px 13px;border-radius:99px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;box-shadow:0 6px 18px rgba(0,0,0,0.3)">
+      🌐 <span id="ms-lang-label">EN</span>
+    </button>
+    <a href="https://webrtc-unified-platform-prod.navy111p.workers.dev/" title="학생 홈페이지로 돌아가기"
+       style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;text-decoration:none;padding:9px 16px;border-radius:99px;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:5px;box-shadow:0 6px 20px -4px rgba(245,158,11,.55)">
+      🏠 <span id="ms-home-label">홈페이지</span>
+    </a>
+  </div>
+  <script>
+    // 언어 토글 (헤더/안내문 등 HTML 텍스트만 — Flutter 내부는 자체 i18n)
+    (function(){
+      var KEY = 'mangoi_speech_lang';
+      var lang = localStorage.getItem(KEY) || 'ko';
+      var TRANS = {
+        '.header__title':            { ko: 'Speech <span>Coach</span>', en: 'Speech <span>Coach</span>' },
+        '.header__subtitle':         { ko: 'AI 기반 영어 발음 교정 &amp; 문법 학습 도구', en: 'AI English Pronunciation &amp; Grammar Coach' },
+        '#browserSupport':           { ko: '지원됨', en: 'Supported' },
+        '.practice__instruction':    { ko: '아래 문장을 큰 소리로 읽어보세요', en: 'Read the sentence aloud' },
+        '#btnChangeSentence':        { ko: '다른 문장 바꾸기', en: 'Change Sentence' },
+        '#btnListenTarget':          { ko: '🔊 원어민 발음 듣기', en: '🔊 Listen Native' },
+        '#ms-home-label':            { ko: '홈페이지', en: 'Home' },
+        '#ms-lang-label':            { ko: 'EN', en: '한' }
+      };
+      // BTS 레벨 선택 / 결과 미리보기 / 학습기록 / 로그아웃 등도 추가
+      var TRANS_EXTRA = [
+        { match: '결과 미리보기',       en: 'Preview Result' },
+        { match: '학습기록',            en: 'History' },
+        { match: '로그아웃',            en: 'Sign Out' },
+        { match: 'BTS 레벨 선택',       en: 'BTS Level' },
+        { match: '레벨을 선택하세요',     en: 'Choose level' },
+        { match: '느리게',              en: 'Slow' },
+        { match: '빠르게',              en: 'Fast' },
+      ];
+      function applyLang() {
+        Object.keys(TRANS).forEach(function(sel){
+          try {
+            document.querySelectorAll(sel).forEach(function(el){
+              el.innerHTML = TRANS[sel][lang] || TRANS[sel].ko;
+            });
+          } catch(e) {}
+        });
+        // EXTRA: 텍스트 노드 단순 치환
+        TRANS_EXTRA.forEach(function(t){
+          document.querySelectorAll('button, span, h2, label, option, div').forEach(function(el){
+            if (el.children.length === 0 && el.textContent.trim() === t.match) {
+              if (!el.dataset.koOrig) el.dataset.koOrig = t.match;
+              el.textContent = (lang === 'en') ? t.en : el.dataset.koOrig;
+            }
+          });
+        });
+        document.documentElement.lang = (lang === 'en') ? 'en' : 'ko';
+      }
+      window.msToggleLang = function(){
+        lang = (lang === 'ko') ? 'en' : 'ko';
+        localStorage.setItem(KEY, lang);
+        applyLang();
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyLang);
+      else applyLang();
+      // Flutter 로드 후 추가 적용 (텍스트가 동적 삽입되는 경우)
+      setTimeout(applyLang, 1500);
+      setTimeout(applyLang, 3000);
+    })();
+  </script>
+
     <!-- ===== User Info Bar (로그인 후 표시) ===== -->
   <div class="user-info-bar" id="userInfo" style="display:none;">
     <span id="userDisplayName"></span>
