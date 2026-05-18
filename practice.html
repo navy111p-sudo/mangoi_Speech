@@ -27,6 +27,43 @@
 
   <link rel="stylesheet" href="css/style.css?v=7">
   <link rel="stylesheet" href="css/auth-styles.css?v=1">
+  <!-- 🌌 망고아이 학생 홈페이지와 동일한 우주 배경 (Andromeda) -->
+  <style>
+    html, body {
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(251,191,36,0.08), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(96,165,250,0.06), transparent 60%),
+        radial-gradient(ellipse at center, rgba(11,15,30,0.55) 0%, rgba(8,11,24,0.92) 100%),
+        url('https://webrtc-unified-platform-prod.navy111p.workers.dev/img/bg/space.jpg') center center / cover no-repeat fixed,
+        #050714 !important;
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
+    /* 헤더/카드 등이 우주 배경 위에서도 잘 보이게 반투명 다크 글래스 처리 */
+    .header, .practice, .recorder, .user-info-bar {
+      background: rgba(20,26,43,0.78) !important;
+      backdrop-filter: blur(14px) saturate(140%) !important;
+      -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+      border: 1px solid rgba(255,255,255,0.10) !important;
+      color: #f1f5f9 !important;
+    }
+    /* 텍스트 색 보정 */
+    .practice__instruction, .recorder__status,
+    .practice select, .practice option { color: #cbd5e1 !important; }
+    .practice__sentence { color: #fff !important; }
+    .header__title, .header__title span,
+    h2, h3 { color: #fff !important; }
+    /* 골드 액센트 유지 (Speech Coach 같은) */
+    .header__title span { color: #fbbf24 !important; }
+    /* 레벨 셀렉트 다크 */
+    #levelSelect {
+      background: rgba(15,21,37,0.7) !important;
+      color: #fff !important;
+      border-color: rgba(251,191,36,0.45) !important;
+    }
+    /* 안내문구 */
+    #levelInfo, .header__subtitle { color: #cbd5e1 !important; }
+  </style>
 </head>
 <body>
   <!-- 🏠 홈페이지로 돌아가기 + EN/한 토글 (우측 상단 floating) -->
