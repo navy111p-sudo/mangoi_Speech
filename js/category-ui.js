@@ -1,12 +1,13 @@
 /**
- * Category UI - Adds Phonics/BTS/SIU category selection menu
+ * Category UI - Adds Phonics/BTS/SIU/中文 category selection menu
  * Also fixes DOM.targetText bug (should be DOM.targetSentence)
  * This file should be loaded AFTER main.js
- * 
- * [v2 수정사항]
+ *
+ * [v3 수정사항 — 2026-05-28]
  * - BTS 옵션에 Level 1~8 라벨 추가
  * - Phonics 옵션에 Level 0 라벨 추가
  * - 레벨 선택 시 levelInfo에 레벨 설명 표시
+ * - 🇨🇳 중국어 카드 추가 — speech-coach-cn.html (다락원 + Lv 1~20) 로 이동
  */
 (function() {
   // === Bug Fix: DOM.targetText is undefined, should be DOM.targetSentence ===
@@ -111,15 +112,23 @@
 
   var btnContainer = document.createElement("div");
   btnContainer.id = "categoryBtns";
-  btnContainer.style.cssText = "display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center; width:100%; max-width:500px;";
+  btnContainer.style.cssText = "display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center; width:100%; max-width:560px;";
 
+  // === v3: 중국어 카드 추가 (external: true → 외부 URL 로 이동) ===
+  var CN_URL = "https://webrtc-unified-platform.navy111p.workers.dev/speech-coach-cn.html";
   var categories = [
-    {id: "cat-phonics", label: "Phonics (Level 0)", groups: ["Phonics", "Phonics (Level 0)"], color: "#10b981"},
-    {id: "cat-bts", label: "BTS (Level 1~8)", groups: ["BTS", "BTS (Level 1~8)"], color: "#e6a800"},
-    {id: "cat-siu", label: "SIU", groups: ["SIU Basic", "SIU Advance"], color: "#6366f1"}
+    {id: "cat-phonics", label: "Phonics (Level 0)",    groups: ["Phonics", "Phonics (Level 0)"], color: "#10b981"},
+    {id: "cat-bts",     label: "BTS (Level 1~8)",      groups: ["BTS", "BTS (Level 1~8)"],       color: "#e6a800"},
+    {id: "cat-siu",     label: "SIU",                  groups: ["SIU Basic", "SIU Advance"],     color: "#6366f1"},
+    {id: "cat-zh",      label: "🇨🇳 中文 (Lv 1~20)",   groups: [], color: "#dc2626", external: true, url: CN_URL, badge: "NEW"}
   ];
 
   function selectCategory(cat) {
+    // 외부 링크 카드인 경우 그냥 이동
+    if (cat.external && cat.url) {
+      window.location.href = cat.url;
+      return;
+    }
     var btns = btnContainer.querySelectorAll("button");
     for (var b = 0; b < btns.length; b++) {
       var thisCat = categories[b];
@@ -164,8 +173,13 @@
     (function(cat) {
       var btn = document.createElement("button");
       btn.id = cat.id;
-      btn.textContent = cat.label;
-      btn.style.cssText = "flex:1; min-width:80px; padding:0.75rem 1rem; border:2px solid " + cat.color + "; border-radius:1rem; font-size:1rem; font-weight:700; background:white; color:" + cat.color + "; cursor:pointer; transition:all 0.2s; font-family:Pretendard,Noto Sans KR,sans-serif;";
+      btn.style.cssText = "position:relative; flex:1; min-width:80px; padding:0.75rem 1rem; border:2px solid " + cat.color + "; border-radius:1rem; font-size:1rem; font-weight:700; background:white; color:" + cat.color + "; cursor:pointer; transition:all 0.2s; font-family:Pretendard,Noto Sans KR,sans-serif;";
+      // NEW 배지 (중국어 카드 등)
+      if (cat.badge) {
+        btn.innerHTML = '<span style="position:absolute;top:-7px;right:-7px;background:#fbbf24;color:#1a1a1a;font-size:9px;font-weight:900;padding:2px 6px;border-radius:99px;letter-spacing:0.4px;box-shadow:0 2px 6px rgba(251,191,36,0.45)">' + cat.badge + '</span>' + cat.label;
+      } else {
+        btn.textContent = cat.label;
+      }
       btn.onmouseenter = function() { if (!this.getAttribute("data-active")) { this.style.background = cat.color; this.style.color = "white"; } };
       btn.onmouseleave = function() { if (!this.getAttribute("data-active")) { this.style.background = "white"; this.style.color = cat.color; } };
       btn.onclick = function() { selectCategory(cat); };
@@ -183,5 +197,27 @@
     updateOptgroupLabels();
     showLevelInfo();
   }, 200);
+
+  // === v3: URL 쿼리 파라미터 자동 선택 ===
+  // mangoiweb 에서 ?course=phonics / ?course=bts / ?course=siu / ?course=zh 로 들어오면
+  // 해당 카테고리 자동 활성화 (중국어는 즉시 redirect)
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var course = (params.get("course") || "").toLowerCase();
+    if (course) {
+      var targetMap = { "phonics": "cat-phonics", "bts": "cat-bts", "siu": "cat-siu", "zh": "cat-zh", "chinese": "cat-zh", "cn": "cat-zh" };
+      var targetId = targetMap[course];
+      if (targetId) {
+        setTimeout(function() {
+          for (var i = 0; i < categories.length; i++) {
+            if (categories[i].id === targetId) {
+              selectCategory(categories[i]);
+              break;
+            }
+          }
+        }, 350);
+      }
+    }
+  } catch(e) { console.warn("[category-ui v3] URL 쿼리 처리 실패:", e); }
 
 })();
