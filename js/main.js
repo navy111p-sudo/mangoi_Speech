@@ -443,6 +443,7 @@ function toggleRecording() {
 
 function startRecording() {
   state.isRecording = true;
+  state._micErrorKind = null;   // 새 시도 — 지난 시도의 마이크 오류 기억 초기화
   if (DOM.btnRecord) DOM.btnRecord.classList.add("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.add("is-active");
   if (DOM.recorderStatus) DOM.recorderStatus.textContent = "듣고 있어요... 영어로 말해주세요";
@@ -566,7 +567,10 @@ function whisperFallback() {
     if (!blob || blob.size < 1200) {
       // MediaRecorder onstop 이 비동기라 blob 이 조금 늦게 준비된다 — 최대 2.4초 대기
       if (++tries < 12) { setTimeout(waitBlob, 200); return; }
-      showNoSpeech();
+      // 녹음본조차 없음 — 병행 녹음이 권한 실패로 못 돌았으면 권한 문제로 안내
+      var dbg = null;
+      try { dbg = window._myRecordingPlayback && window._myRecordingPlayback.debug && window._myRecordingPlayback.debug(); } catch (e) {}
+      showNoSpeech(dbg && dbg.autoRecordFailed ? "denied" : null);
       return;
     }
     var ext = /mp4|aac|m4a/i.test(blob.type || "") ? "m4a" : (/ogg/i.test(blob.type || "") ? "ogg" : "webm");
@@ -577,7 +581,8 @@ function whisperFallback() {
       .then(function (r) { return r.json(); })
       .then(function (d) {
         var text = (d && d.ok) ? tidySpeech(String(d.text || "").trim()) : "";
-        if (!text) { showNoSpeech(); return; }
+        // 녹음은 됐는데 전사가 비면 = 마이크가 무음을 녹음(입력장치/볼륨 문제일 확률 높음)
+        if (!text) { showNoSpeech("silent"); return; }
         if (DOM.recognizedText) {
           DOM.recognizedText.textContent = text;
           DOM.recognizedText.classList.remove("recorder__text--empty");
@@ -585,15 +590,26 @@ function whisperFallback() {
         if (DOM.recorderStatus) DOM.recorderStatus.textContent = "분석 중...";
         evaluateSpeech(text);
       })
-      .catch(function () { showNoSpeech(); });
+      .catch(function () { showNoSpeech("network"); });
   })();
 }
-function showNoSpeech() {
-  if (DOM.recorderStatus) {
-    DOM.recorderStatus.textContent =
-      "시도 " + state.currentAttempt + "/" + state.maxAttempts +
+/* 실패 안내 — 원인별로 다른 해결 방법을 보여준다 (2026-07-27: 전엔 전부
+   "인식되지 않았습니다"로만 나와, 권한이 꺼져 있어도 사용자가 알 수 없었다) */
+function showNoSpeech(reason) {
+  var msg;
+  if (state._micErrorKind === "not-allowed" || reason === "denied") {
+    msg = "🎤 마이크 권한이 꺼져 있어요 — 주소창 자물쇠(🔒) → 사이트 설정 → 마이크 '허용' 후 새로고침해 주세요.";
+  } else if (state._micErrorKind === "audio-capture") {
+    msg = "🎤 마이크를 찾을 수 없어요 — 마이크 연결과 윈도우 소리 설정의 '입력' 장치를 확인해 주세요.";
+  } else if (reason === "silent") {
+    msg = "🎤 녹음은 됐지만 소리가 들리지 않았어요 — 윈도우 소리 설정에서 '입력' 장치가 맞는지, 마이크 볼륨을 확인해 주세요.";
+  } else if (reason === "network") {
+    msg = "🌐 인식 서버에 연결하지 못했어요 — 인터넷 연결을 확인하고 다시 시도해 주세요.";
+  } else {
+    msg = "시도 " + state.currentAttempt + "/" + state.maxAttempts +
       " - 음성이 인식되지 않았습니다. 다시 시도해주세요.";
   }
+  if (DOM.recorderStatus) DOM.recorderStatus.textContent = msg;
   if (DOM.recognizedText) {
     DOM.recognizedText.textContent = "음성 인식 결과가 여기에 표시됩니다";
     DOM.recognizedText.classList.add("recorder__text--empty");
@@ -618,6 +634,10 @@ function handleRecognitionError(event) {
     default:
       errorMessage = "음성인식 오류가 발생했습니다: " + event.error;
   }
+  // 🔎 (2026-07-27) 이 메시지는 곧이어 오는 'end' 이벤트(handleRecognitionEnd)가
+  //   "음성이 인식되지 않았습니다"로 덮어써 사용자가 못 보던 문제가 있었다 — 진짜 원인을
+  //   기억해 뒀다가 showNoSpeech() 가 우선 표시한다(권한/장치 문제를 사용자가 알게).
+  state._micErrorKind = event.error;
   if (DOM.recorderStatus) DOM.recorderStatus.textContent = errorMessage;
 }
 
