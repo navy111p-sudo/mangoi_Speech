@@ -539,7 +539,7 @@
         });
       }).then(function () {
         // 3. 새 SW 등록
-        return navigator.serviceWorker.register("service-worker.js?v=6");
+        return navigator.serviceWorker.register("service-worker.js?v=7");
       }).then(function (reg) {
         console.log("[SW] 재등록 성공:", reg.scope);
       }).catch(function (err) {
