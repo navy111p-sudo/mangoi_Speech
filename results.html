@@ -197,38 +197,25 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <!-- 📊 기록 원천 — 이 기기(localStorage) + 망고아이 서버.
+       2026-07-28: Firestore 보안 규칙이 읽기·쓰기를 모두 막고 있어 기록이 한 건도
+       저장·조회되지 않았다(결과가 전부 0이던 진짜 원인). 저장처를 옮겼다. -->
+  <script src="js/mangoi-progress.js?v=1"></script>
   <script>
   (function(){
     // 로딩 상태 표시
     var hl=document.getElementById("historyList");
     if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;font-size:0.85rem;">데이터를 불러오는 중...</div>';
 
-    // Firebase auth 준비 대기 (auth가 아직 로드되지 않았을 수 있음)
-    var waitAuth = setInterval(function(){
-      if(typeof auth !== "undefined" && typeof db !== "undefined"){
-        clearInterval(waitAuth);
-        initResults();
-      }
-    }, 200);
-
-    // 5초 후에도 로드 안 되면 타임아웃
-    setTimeout(function(){ clearInterval(waitAuth); }, 5000);
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initResults);
+    else initResults();
 
     function initResults(){
-      auth.onAuthStateChanged(function(user){
-        if(!user){
-          // 로그인 안 된 경우 안내 메시지 표시
-          var hl=document.getElementById("historyList");
-          if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;font-size:0.85rem;">로그인 후 학습 기록을 확인할 수 있습니다.<br><a href="login.html" style="color:#ff9ff3;text-decoration:underline;margin-top:8px;display:inline-block;">로그인하기</a></div>';
-          return;
-        }
-        var uid = user.uid;
+      (function(){
+        // 이 기기에 쌓인 기록을 그대로 사용 — 로그인·네트워크 없이도 항상 동작한다.
+        var sessions = (window.MangoiProgress ? window.MangoiProgress.sessions() : []);
 
-        // Load sessions - orderBy로 정렬하여 가져오기
-        db.collection("sessions").where("uid","==",uid).get()
-        .then(function(snap){
-          var sessions = [];
-          snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; sessions.push(d); });
+        Promise.resolve(sessions).then(function(sessions){
 
           if(sessions.length === 0){
             var hl=document.getElementById("historyList");
@@ -279,7 +266,8 @@
           var avgPron = scoreCount>0 ? Math.round(pron/scoreCount) : 0;
           var avgGram = scoreCount>0 ? Math.round(gram/scoreCount) : 0;
           var avgFlu = scoreCount>0 ? Math.round(flu/scoreCount) : 0;
-          var estMinutes = total * 3;
+          /* 기록 1건 = 문장 1회 시도(약 30초) — 세션당 3분으로 잡던 옛 계산은 실제의 6배였다 */
+          var estMinutes = Math.max(1, Math.round(total * 0.5));
 
           // Update stats
           var el;
@@ -372,19 +360,15 @@
         })["catch"](function(e){
           console.error("[Results] load error:",e);
           /* 🔴 (2026-07-28) 조회가 실패해도 KPI 타일은 "0점"으로 남아 있어, 기록이 없는 것처럼
-             보였다(사장님 신고 "결과 보기가 전부 0"). 실패한 값은 0 대신 '-' 로 두고
-             진짜 원인을 화면에 적는다 — 저장 자체도 같은 권한으로 막히므로 원인 표기가 중요. */
+             보였다(사장님 신고 "결과 보기가 전부 0"). 실패한 값은 0 대신 '-' 로 둔다. */
           var ids=["statSessions","statAvgScore","statTime","statStreak"], el;
           for(var i=0;i<ids.length;i++){ el=document.getElementById(ids[i]); if(el) el.textContent="-"; }
-          var denied = e && (e.code === "permission-denied");
           var hl=document.getElementById("historyList");
           if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,107,107,0.75);padding:20px;font-size:0.85rem;line-height:1.6;">'+
-            (denied
-              ? '학습 기록 서버(Firebase)의 <b>접근 권한이 닫혀 있어</b> 기록을 읽지도, 저장하지도 못하고 있습니다.<br><span style="opacity:.75">관리자에게 Firestore 보안 규칙 확인을 요청해 주세요.</span>'
-              : '데이터를 불러오는 중 오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.')+
-            '<br><span style="opacity:.55;font-size:0.78rem;">('+((e&&e.code)||"unknown")+')</span></div>';
+            '학습 기록을 불러오는 중 오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.'+
+            '<br><span style="opacity:.55;font-size:0.78rem;">('+((e&&e.message)||"unknown")+')</span></div>';
         });
-      });
+      })();
     }
   })();
   </script>

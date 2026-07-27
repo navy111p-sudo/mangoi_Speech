@@ -441,6 +441,9 @@
   <!-- 🎙 병행 녹음(내 음성 듣기 + Whisper 폴백의 녹음원). 2026-07-28: 이 스크립트가
        어느 페이지에도 로드된 적이 없어 Whisper 폴백이 통째로 죽어 있었다 — 반드시 main.js 뒤. -->
   <script src="js/my-recording-playback.js?v=11"></script>
+  <!-- 📊 학습 기록 저장 — 이 기기(localStorage) + 망고아이 서버. Firebase 규칙이 막혀
+       한 건도 저장되지 않던 것을 대체한다(결과 보기의 데이터 원천). main.js 뒤에 둘 것. -->
+  <script src="js/mangoi-progress.js?v=1"></script>
     <script src="js/category-ui.js?v=3"></script>
     <script src="js/fix-loading.js"></script>
     
@@ -450,7 +453,10 @@
   <script src="js/firebase-db.js"></script>
 <script src="js/remove-preview.js"></script>
   <script src="js/ui-enhancements.js?v=2"></script>
-    <script src="js/firebase-session-save.js?v=2"></script>
+    <!-- 🚫 firebase-session-save.js 제거(2026-07-28) — 이 프로젝트의 Firestore 규칙이
+         읽기·쓰기를 모두 막고 있어 저장이 매번 permission-denied 로 실패했다(기록 0건의 원인).
+         저장은 mangoi-progress.js 가 담당한다. 규칙이 열리면 다시 붙일 수 있다. -->
+    <!-- <script src="js/firebase-session-save.js?v=2"></script> -->
 
   <!-- ===== 마스코트 비디오 소리 토글 ===== -->
   <script>
