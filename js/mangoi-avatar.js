@@ -106,16 +106,30 @@
       }
       ctx.putImageData(im, 0, 0);
     }
+    /* (2026-07-27 사장님 신고 "입이 너무 느려") 음량→입 매핑 v2:
+       · 말소리가 나는 동안은 절대 pause 하지 않는다 — 소리가 잠깐 작아질 때마다
+         pause/play 를 반복하면 영상 시동 지연(수십 ms)이 쌓여 입이 늘어져 보였다.
+       · 원본 녹화의 입 움직임이 실제 발화 음절 속도보다 느리므로, 재생 속도를
+         1.6~3.2배로 공격적으로 올려 입이 음절을 따라가게 한다.
+       · 문장 사이 진짜 공백(무음 ~150ms 지속)에만 입을 닫는다. 열기는 즉각. */
+    var silentFrames = 0;
     function loop() {
       if (!drawing) { raf = 0; return; }
       if (boundEl && analyser && !boundEl.paused && !boundEl.ended) {
         var level = rms();
-        if (level > 0.04) { if (video.paused) { try { video.play(); } catch (e) {} } try { video.playbackRate = 0.75 + level * 1.2; } catch (e) {} }
-        else { if (!video.paused) { try { video.pause(); } catch (e) {} } }
+        if (level > 0.03) {
+          silentFrames = 0;
+          if (video.paused) { try { video.play(); } catch (e) {} }
+          try { video.playbackRate = Math.min(3.2, 1.6 + level * 6); } catch (e) {}
+        } else if (++silentFrames > 9) {
+          if (!video.paused) { try { video.pause(); } catch (e) {} }
+        }
       } else if (boundEl) {
+        silentFrames = 0;
         if (!video.paused) { try { video.pause(); } catch (e) {} }   // 대기/종료 = 입 정지
       } else {
-        if (video.paused) { try { video.playbackRate = 1; video.play(); } catch (e) {} }
+        silentFrames = 0;
+        if (video.paused) { try { video.playbackRate = 1.6; video.play(); } catch (e) {} }
       }
       keyFrame();
       raf = requestAnimationFrame(loop);
