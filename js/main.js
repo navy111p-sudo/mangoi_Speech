@@ -470,20 +470,51 @@ function stopRecording() {
   }
 }
 
+/* 🎤 (2026-07-27) 안드로이드 크롬 누적형 대응 — 확정 결과마다 "지금까지 말한 문장 전체"를
+   다시 보내므로 그냥 이어붙이면(+=) "whatwhat iswhat is inwhat is in the…"처럼 겹겹이
+   쌓인다(실기기 재현·채점도 0점이 됨). 앞 문장의 꼬리와 새 조각의 머리가 겹치면 겹친
+   만큼 지우고 붙인다(mangoiweb ai-friend 에서 하니스로 검증된 방식):
+     merge("what is", "what is in") = "what is in"   ← 누적형: 통째로 교체됨
+     merge("what",    "is in")      = "what is in"   ← 조각형: 그대로 연결 */
+function mergeSpeech(a, b) {
+  a = String(a || "").replace(/\s+/g, " ").trim();
+  b = String(b || "").replace(/\s+/g, " ").trim();
+  if (!a) return b;
+  if (!b) return a;
+  var la = a.toLowerCase().split(" "), lb = b.toLowerCase().split(" "), rb = b.split(" ");
+  var k = 0;
+  for (var n = Math.min(la.length, lb.length); n > 0; n--) {
+    if (la.slice(la.length - n).join(" ") === lb.slice(0, n).join(" ")) { k = n; break; }
+  }
+  var rest = rb.slice(k).join(" ");
+  return rest ? a + " " + rest : a;
+}
+/* 같은 단어("I I like like")·같은 구절("what is what is")의 연속 반복을 한 번으로 */
+function tidySpeech(s) {
+  s = String(s || "").replace(/\s+/g, " ").trim();
+  for (var i = 0; i < 3; i++) {
+    var prev = s;
+    s = s.replace(/(^|\s)(\S+)(?:\s+\2)+(?=\s|$)/gi, "$1$2");
+    s = s.replace(/(^|\s)((?:\S+\s+){1,5}\S+)(?:\s+\2)+(?=\s|$)/gi, "$1$2");
+    if (s === prev) break;
+  }
+  return s;
+}
+
 function handleRecognitionResult(event) {
   var interimTranscript = "";
   var finalTranscript = "";
-  // continuous 모드: 모든 결과를 누적
+  // 겹침 병합으로 매 이벤트마다 처음부터 재조립 (누적형/조각형 브라우저 모두 안전)
   for (var i = 0; i < event.results.length; i++) {
     var result = event.results[i];
     if (result.isFinal) {
-      finalTranscript += result[0].transcript;
+      finalTranscript = mergeSpeech(finalTranscript, result[0].transcript);
     } else {
-      interimTranscript += result[0].transcript;
+      interimTranscript = mergeSpeech(interimTranscript, result[0].transcript);
     }
   }
   // 인식된 텍스트 표시 (최종 + 임시)
-  var displayText = finalTranscript + interimTranscript;
+  var displayText = tidySpeech(mergeSpeech(finalTranscript, interimTranscript));
   if (displayText) {
     if (DOM.recognizedText) {
       DOM.recognizedText.textContent = displayText;

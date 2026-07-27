@@ -136,16 +136,26 @@
     } catch (e) {} } }; im.src = A + 'teacher-avatar.png'; } catch (e) {} })();
 
     return {
-      attach: function (audioEl) {
-        if (!audioEl || audioEl === boundEl) return;
+      /* 🔊 (2026-07-27 사장님 실기기 신고 "듣기가 아예 안 나옴") 오디오를 분석기에 물리면
+         (createMediaElementSource) 그 오디오는 오직 AudioContext 를 통해서만 나온다 —
+         모바일에서 컨텍스트가 suspended 면 통째로 무음이 된다. 그래서:
+         · arm(): 버튼 클릭(제스처) 안에서 컨텍스트를 만들고 resume 해 둔다.
+         · attach(): 컨텍스트가 '확실히 running' 일 때만 물린다. 아니면 물리지 않는다 —
+           소리는 브라우저 기본 경로로 정상 재생되고, 입은 재생/정지 모션으로만 움직인다.
+           (립싱크 정밀도보다 소리가 나는 것이 우선) */
+      arm: function () {
         if (!ensureCtx()) return;
+        try { if (actx.state === 'suspended') actx.resume(); } catch (e) {}
+      },
+      attach: function (audioEl) {
+        if (!audioEl || boundEl || audioFailed) return;
+        if (!actx || actx.state !== 'running') return;   // running 확정 전엔 절대 안 물림
         try {
           var src = actx.createMediaElementSource(audioEl);
           src.connect(actx.destination);        // 소리 경로 필수(안 하면 음소거)
           src.connect(analyser);
           boundEl = audioEl;
-          try { if (actx.state === 'suspended') actx.resume(); } catch (e) {}
-        } catch (e) { /* 이미 물렸거나 실패 → 연속 재생 폴백 */ }
+        } catch (e) { audioFailed = true; /* 물리기 실패 → 연속 재생 폴백 */ }
       },
       plainStart: function () { setSpeaking(true); try { if (actx && actx.state === 'suspended') actx.resume(); } catch (e) {} startDraw(); },
       plainStop: function () { setSpeaking(false); stopDraw(); try { video.pause(); } catch (e) {} still(); }
@@ -165,17 +175,25 @@
       avatar.plainStop();
     }
 
-    function synthFallback(text) {
+    function synthFallback(text, _retried) {
       try {
         if (!window.speechSynthesis) return;
         var voices = window.speechSynthesis.getVoices();
         var v = null;
         for (var i = 0; i < voices.length; i++) { if (voices[i].lang && voices[i].lang.toLowerCase().indexOf('en') === 0) { v = voices[i]; break; } }
-        // 영어 보이스가 없으면 침묵 — 한국어 기본 보이스가 영어 문장을 "아이 러브…" 식으로
-        // 읽는 사고(speech-coach 에서 실제 발생) 방지. 침묵이 오독보다 낫다.
-        if (!v) return;
+        if (!v) {
+          // 보이스 목록은 비동기 로드 — 한 번만 기다렸다 재시도
+          if (!_retried) { setTimeout(function () { synthFallback(text, true); }, 700); return; }
+          // (2026-07-27) 재시도 후에도 en 이 없을 때의 분기:
+          //  · 목록이 '비어' 있으면(안드로이드에서 흔함) lang=en-US 지정만으로 발화 —
+          //    안드로이드 TTS 엔진은 lang 을 보고 영어 엔진으로 올바르게 말한다.
+          //  · 목록이 '있는데' en 이 없으면(한국어 Windows) 기본 한국어 보이스가 영어를
+          //    "아이 러브…" 식으로 읽으므로 침묵(speech-coach 에서 실제 발생한 사고 방지).
+          if (voices.length > 0) return;
+        }
         var u = new SpeechSynthesisUtterance(text);
-        u.voice = v; u.lang = 'en-US';
+        if (v) u.voice = v;
+        u.lang = 'en-US';
         u.rate = window.ttsRate || 0.9; u.pitch = 1; u.volume = 1;
         u.onstart = function () { avatar.plainStart(); };
         u.onend = function () { avatar.plainStop(); };
@@ -188,14 +206,18 @@
       text = String(text || '').trim();
       if (!text) return;
       stopAll();
+      avatar.arm();   // 버튼 클릭(제스처) 안 — 오디오컨텍스트 생성/재개는 반드시 여기서
       var key = text;
       var playUrl = function (u) {
         try {
           if (!ttsAudio) {
             ttsAudio = new Audio();
             ttsAudio.preload = 'auto';
-            avatar.attach(ttsAudio);
-            ttsAudio.addEventListener('playing', function () { avatar.plainStart(); });
+            ttsAudio.addEventListener('playing', function () {
+              // 컨텍스트가 '확실히 running' 일 때만 분석기에 물린다(아니면 소리 우선, 모션만).
+              avatar.attach(ttsAudio);
+              avatar.plainStart();
+            });
             var stop = function () { avatar.plainStop(); };
             ttsAudio.addEventListener('ended', stop);
             ttsAudio.addEventListener('pause', stop);
