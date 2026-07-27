@@ -371,8 +371,18 @@
           }
         })["catch"](function(e){
           console.error("[Results] load error:",e);
+          /* 🔴 (2026-07-28) 조회가 실패해도 KPI 타일은 "0점"으로 남아 있어, 기록이 없는 것처럼
+             보였다(사장님 신고 "결과 보기가 전부 0"). 실패한 값은 0 대신 '-' 로 두고
+             진짜 원인을 화면에 적는다 — 저장 자체도 같은 권한으로 막히므로 원인 표기가 중요. */
+          var ids=["statSessions","statAvgScore","statTime","statStreak"], el;
+          for(var i=0;i<ids.length;i++){ el=document.getElementById(ids[i]); if(el) el.textContent="-"; }
+          var denied = e && (e.code === "permission-denied");
           var hl=document.getElementById("historyList");
-          if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,107,107,0.7);padding:20px;font-size:0.85rem;">데이터를 불러오는 중 오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.</div>';
+          if(hl) hl.innerHTML='<div style="text-align:center;color:rgba(255,107,107,0.75);padding:20px;font-size:0.85rem;line-height:1.6;">'+
+            (denied
+              ? '학습 기록 서버(Firebase)의 <b>접근 권한이 닫혀 있어</b> 기록을 읽지도, 저장하지도 못하고 있습니다.<br><span style="opacity:.75">관리자에게 Firestore 보안 규칙 확인을 요청해 주세요.</span>'
+              : '데이터를 불러오는 중 오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.')+
+            '<br><span style="opacity:.55;font-size:0.78rem;">('+((e&&e.code)||"unknown")+')</span></div>';
         });
       });
     }
