@@ -444,6 +444,9 @@ function toggleRecording() {
 function startRecording() {
   state.isRecording = true;
   state._micErrorKind = null;   // 새 시도 — 지난 시도의 마이크 오류 기억 초기화
+  state._serverMode = false;
+  if (state._serverTimeout) { clearTimeout(state._serverTimeout); state._serverTimeout = null; }
+  state.recordingStartTime = Date.now();   // onstart 가 안 와도 '즉사' 판정이 되게
   if (DOM.btnRecord) DOM.btnRecord.classList.add("is-recording");
   if (DOM.waveAnimation) DOM.waveAnimation.classList.add("is-active");
   if (DOM.recorderStatus) DOM.recorderStatus.textContent = "듣고 있어요... 영어로 말해주세요";
@@ -467,7 +470,14 @@ function stopRecording() {
   if (state._recordingTimeout) { clearTimeout(state._recordingTimeout); state._recordingTimeout = null; }
   if (state._silenceTimeout) { clearTimeout(state._silenceTimeout); state._silenceTimeout = null; }
   if (state.recognition) {
-    state.recognition.stop();
+    try { state.recognition.stop(); } catch (e) {}   // 서버 듣기 모드에선 인식이 이미 끝나 있음
+  }
+  // 🎙 서버 듣기 모드 종료 — 패치된 stopRecording 이 방금 MediaRecorder 를 멈췄으니
+  //   blob 폴링(whisperFallback)으로 이어서 전사·채점한다.
+  if (state._serverMode) {
+    state._serverMode = false;
+    if (state._serverTimeout) { clearTimeout(state._serverTimeout); state._serverTimeout = null; }
+    whisperFallback();
   }
 }
 
@@ -538,20 +548,40 @@ function handleRecognitionEnd() {
   if (DOM.waveAnimation) DOM.waveAnimation.classList.remove("is-active");
   if (DOM.recognizedText) DOM.recognizedText.style.opacity = "1";
 
+  var spokenText = DOM.recognizedText ? DOM.recognizedText.textContent.trim() : "";
+  var hasText = !!spokenText && spokenText !== "음성 인식 결과가 여기에 표시됩니다";
+
+  // 🎙 (2026-07-28 "누르면 자동으로 꺼진다") 브라우저 인식이 시작 직후 죽는 데스크톱이
+  //   있다(구글 STT 차단·aborted 등). 그 순간 병행 녹음까지 꺼버리면 Whisper 폴백에 보낼
+  //   녹음이 0.n초뿐이라 폴백도 실패한다 — 녹음기가 살아 있으면 끊지 말고 서버가 대신
+  //   듣는 모드로 전환한다(버튼으로 멈추거나 9초 후 자동 종료 → Whisper 전사 → 채점).
+  if (!hasText && !state._serverMode) {
+    var rec = null;
+    try { rec = window._myRecordingPlayback && window._myRecordingPlayback.debug && window._myRecordingPlayback.debug(); } catch (e) {}
+    var diedFast = Date.now() - (state.recordingStartTime || 0) < 3000;
+    if (diedFast && rec && rec.autoRecording) {
+      state._serverMode = true;
+      state.isRecording = true;   // 버튼이 '눌러서 멈춤'으로 계속 동작하게
+      if (DOM.btnRecord) DOM.btnRecord.classList.add("is-recording");
+      if (DOM.waveAnimation) DOM.waveAnimation.classList.add("is-active");
+      if (DOM.recorderStatus) DOM.recorderStatus.textContent = "🎙 AI 서버가 듣고 있어요 — 문장을 말한 뒤 버튼을 눌러 주세요";
+      state._serverTimeout = setTimeout(function () { if (state._serverMode) stopRecording(); }, 9000);
+      return;
+    }
+  }
+
   // MediaRecorder 자동 중지 (my-recording-playback.js 연동)
   if (window._myRecordingPlayback && typeof window._stopMediaRecorder === "function") {
     window._stopMediaRecorder();
   }
 
-  var spokenText = DOM.recognizedText ? DOM.recognizedText.textContent.trim() : "";
-  if (spokenText && spokenText !== "음성 인시 결과가 여기에 표시됩니다") {
+  if (hasText) {
     if (DOM.recorderStatus) DOM.recorderStatus.textContent = "분석 중...";
     evaluateSpeech(spokenText);
   } else {
-    // 🎙 (2026-07-27 "말해도 인식이 안 된다") 브라우저 인식이 빈손으로 끝나는 환경이 있다
-    //   (데스크톱 마이크 경합·일부 기기). 이 앱은 말하는 동안 오디오를 병행 녹음하므로
-    //   (my-recording-playback), 그 녹음본을 망고아이 서버 Whisper 로 전사해 같은 평가
-    //   흐름으로 잇는다. 녹음본조차 없을 때만 기존 실패 안내를 보여준다.
+    // 🎙 (2026-07-27 "말해도 인식이 안 된다") 브라우저 인식이 빈손으로 끝나도 병행 녹음본이
+    //   있으면 망고아이 서버 Whisper 로 전사해 같은 평가 흐름으로 잇는다.
+    //   녹음본조차 없을 때만 실패 안내를 보여준다.
     whisperFallback();
   }
 }
@@ -605,9 +635,14 @@ function showNoSpeech(reason) {
     msg = "🎤 녹음은 됐지만 소리가 들리지 않았어요 — 윈도우 소리 설정에서 '입력' 장치가 맞는지, 마이크 볼륨을 확인해 주세요.";
   } else if (reason === "network") {
     msg = "🌐 인식 서버에 연결하지 못했어요 — 인터넷 연결을 확인하고 다시 시도해 주세요.";
+  } else if (state._micErrorKind === "aborted") {
+    msg = "🎤 마이크가 도중에 끊겼어요 — 다른 프로그램(줌·녹음기 등)이 마이크를 쓰고 있는지 확인해 주세요.";
+  } else if (state._micErrorKind === "network") {
+    msg = "🌐 브라우저 음성인식 서버에 연결하지 못했어요 — 인터넷·보안 프로그램을 확인해 주세요.";
   } else {
     msg = "시도 " + state.currentAttempt + "/" + state.maxAttempts +
-      " - 음성이 인식되지 않았습니다. 다시 시도해주세요.";
+      " - 음성이 인식되지 않았습니다. 다시 시도해주세요." +
+      (state._micErrorKind ? " (원인코드: " + state._micErrorKind + ")" : "");
   }
   if (DOM.recorderStatus) DOM.recorderStatus.textContent = msg;
   if (DOM.recognizedText) {

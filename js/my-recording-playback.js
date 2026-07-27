@@ -146,6 +146,8 @@
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
         }).then(function (stream) {
           console.log("[rec-v10] mic permission granted, starting recognition + recorder");
+          audioStream = stream;   // cleanupStream 이 트랙을 멈출 수 있게 (안 하면 마이크가 계속 켜져 있음)
+          autoRecordFailed = false;
           // 마이크 권한 확보 후 음성인식 시작
           if (typeof _origStartRecording === "function") {
             _origStartRecording();
@@ -155,6 +157,7 @@
           autoRecording = true;
         }).catch(function (err) {
           console.warn("[rec-v10] getUserMedia failed:", err.name, err.message);
+          autoRecordFailed = true;   // whisperFallback 이 '권한 문제' 안내를 띄우는 근거
           // 마이크 권한 실패해도 음성인식은 시도
           if (typeof _origStartRecording === "function") {
             _origStartRecording();
