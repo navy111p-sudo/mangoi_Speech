@@ -547,15 +547,56 @@ function handleRecognitionEnd() {
     if (DOM.recorderStatus) DOM.recorderStatus.textContent = "분석 중...";
     evaluateSpeech(spokenText);
   } else {
-    if (DOM.recorderStatus) {
-      DOM.recorderStatus.textContent =
-        "시도 " + state.currentAttempt + "/" + state.maxAttempts +
-        " - 음성이 인식되지 않았습니다. 다시 시도해주세요.";
+    // 🎙 (2026-07-27 "말해도 인식이 안 된다") 브라우저 인식이 빈손으로 끝나는 환경이 있다
+    //   (데스크톱 마이크 경합·일부 기기). 이 앱은 말하는 동안 오디오를 병행 녹음하므로
+    //   (my-recording-playback), 그 녹음본을 망고아이 서버 Whisper 로 전사해 같은 평가
+    //   흐름으로 잇는다. 녹음본조차 없을 때만 기존 실패 안내를 보여준다.
+    whisperFallback();
+  }
+}
+
+/* 🎙 브라우저 인식 실패 시 — 병행 녹음본 → 서버 Whisper 전사 → 평가 (2026-07-27) */
+var WHISPER_URL = "https://webrtc-unified-platform.navy111p.workers.dev/api/voice/transcribe";
+function whisperFallback() {
+  var tries = 0;
+  if (DOM.recorderStatus) DOM.recorderStatus.textContent = "AI가 녹음을 다시 듣는 중...";
+  (function waitBlob() {
+    var blob = (window._myRecordingPlayback && window._myRecordingPlayback.getBlob)
+      ? window._myRecordingPlayback.getBlob() : null;
+    if (!blob || blob.size < 1200) {
+      // MediaRecorder onstop 이 비동기라 blob 이 조금 늦게 준비된다 — 최대 2.4초 대기
+      if (++tries < 12) { setTimeout(waitBlob, 200); return; }
+      showNoSpeech();
+      return;
     }
-    if (DOM.recognizedText) {
-      DOM.recognizedText.textContent = "음성 인식 결과가 여기에 표시됩니다";
-      DOM.recognizedText.classList.add("recorder__text--empty");
-    }
+    var ext = /mp4|aac|m4a/i.test(blob.type || "") ? "m4a" : (/ogg/i.test(blob.type || "") ? "ogg" : "webm");
+    var fd = new FormData();
+    fd.append("audio", blob, "speech." + ext);
+    fd.append("lang", "en");   // 언어 힌트 없으면 짧은 영어를 한국어로 오인식하는 사고가 있었음
+    fetch(WHISPER_URL, { method: "POST", body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var text = (d && d.ok) ? tidySpeech(String(d.text || "").trim()) : "";
+        if (!text) { showNoSpeech(); return; }
+        if (DOM.recognizedText) {
+          DOM.recognizedText.textContent = text;
+          DOM.recognizedText.classList.remove("recorder__text--empty");
+        }
+        if (DOM.recorderStatus) DOM.recorderStatus.textContent = "분석 중...";
+        evaluateSpeech(text);
+      })
+      .catch(function () { showNoSpeech(); });
+  })();
+}
+function showNoSpeech() {
+  if (DOM.recorderStatus) {
+    DOM.recorderStatus.textContent =
+      "시도 " + state.currentAttempt + "/" + state.maxAttempts +
+      " - 음성이 인식되지 않았습니다. 다시 시도해주세요.";
+  }
+  if (DOM.recognizedText) {
+    DOM.recognizedText.textContent = "음성 인식 결과가 여기에 표시됩니다";
+    DOM.recognizedText.classList.add("recorder__text--empty");
   }
 }
 
