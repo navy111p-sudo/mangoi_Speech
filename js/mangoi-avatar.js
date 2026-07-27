@@ -73,6 +73,14 @@
     var raf = 0, drawing = false;
     // 얼굴+어깨 상반신 크롭(teacher-avatar.png alpha 실측값 — speech-coach 와 동일)
     var CROP = { l: 67 / 512, t: 40 / 512, r: 445 / 512, b: 1 };
+    /* 🗣 (2026-07-27) 입모양 3단계(poses) — mangoiweb 공용 아바타에서 검증된 방식 이식.
+       같은 루프 영상 안에서 자연스럽게 나오는 "다문/중간/크게 벌린" 순간의 타임스탬프에
+       멈춰 보여준다. 소리 크기가 단계를 넘을 때만 그 프레임으로 seek 하므로, 배속 재생보다
+       입이 소리에 훨씬 즉각적으로 붙는다(음절마다 여닫는 느낌). */
+    var POSES = { closed: 3.3, medium: 0.2, wide: 4.0 };
+    var curTier = null, lastSwitchAt = 0;
+    var MIN_SWITCH_MS = 90;   // 잡음성 순간 변동으로 덜덜 떨리는 것 방지(한 음절 정도 유지)
+    var fadeData = null, fadeT0 = 0, FADE_MS = 130;   // 단계 전환시 짧은 크로스페이드
 
     var actx = null, analyser = null, lipData = null, boundEl = null, audioFailed = false;
     function ensureCtx() {
@@ -104,37 +112,62 @@
         else if (diff > 10) { d[i + 3] = ((38 - diff) * 255 / 28) | 0; d[i + 1] = mx; }
         else if (diff > 0) { d[i + 1] = mx; }
       }
+      // 🎞 입모양 단계 전환 직후엔 이전 화면과 짧게 섞어 프레임이 뚝 끊겨 보이지 않게
+      if (fadeData && fadeData.data.length === d.length) {
+        var a = (Date.now() - fadeT0) / FADE_MS;
+        if (a >= 1) { fadeData = null; }
+        else {
+          var fd = fadeData.data;
+          for (var j = 0; j < d.length; j += 4) {
+            d[j]     = fd[j]     + (d[j]     - fd[j])     * a;
+            d[j + 1] = fd[j + 1] + (d[j + 1] - fd[j + 1]) * a;
+            d[j + 2] = fd[j + 2] + (d[j + 2] - fd[j + 2]) * a;
+            d[j + 3] = fd[j + 3] + (d[j + 3] - fd[j + 3]) * a;
+          }
+        }
+      } else if (fadeData) { fadeData = null; }
       ctx.putImageData(im, 0, 0);
     }
-    /* (2026-07-27 사장님 신고 "입이 너무 느려") 음량→입 매핑 v2:
-       · 말소리가 나는 동안은 절대 pause 하지 않는다 — 소리가 잠깐 작아질 때마다
-         pause/play 를 반복하면 영상 시동 지연(수십 ms)이 쌓여 입이 늘어져 보였다.
-       · 원본 녹화의 입 움직임이 실제 발화 음절 속도보다 느리므로, 재생 속도를
-         1.6~3.2배로 공격적으로 올려 입이 음절을 따라가게 한다.
-       · 문장 사이 진짜 공백(무음 ~150ms 지속)에만 입을 닫는다. 열기는 즉각. */
-    var silentFrames = 0;
+    // 🗣 소리 크기 → 입모양 단계
+    function tierFor(level) {
+      if (level <= 0.04) return 'closed';
+      if (level <= 0.09) return 'medium';
+      return 'wide';
+    }
+    function showTier(tier) {
+      if (tier === curTier) return;
+      // 영상이 아직 준비 전이면 curTier 를 확정하지 않고 다음 프레임에 재시도
+      // (준비 전에 확정하면 seek 이 씹힌 채 "이미 그 단계"로 믿어 영원히 안 바뀜)
+      if (video.readyState < 2) return;
+      var now = Date.now();
+      if (now - lastSwitchAt < MIN_SWITCH_MS) return;
+      var t = POSES[tier];
+      if (typeof t !== 'number') return;
+      try { fadeData = ctx.getImageData(0, 0, W, H); fadeT0 = now; } catch (e) { fadeData = null; }
+      curTier = tier; lastSwitchAt = now;
+      try { if (!video.paused) video.pause(); video.currentTime = t; } catch (e) {}
+    }
+    /* (2026-07-27 "입이 너무 느려" 2차 개선) 입모양 3단계 포즈 방식 —
+       배속 재생 대신, 소리 크기(조용함/보통/큼)에 맞는 입모양 프레임으로 즉시 seek.
+       음절마다 입이 여닫는 것처럼 소리에 즉각 붙는다(90ms 최소 유지로 떨림 방지,
+       130ms 크로스페이드로 프레임 끊김 완화). mangoiweb 공용 아바타 검증본 이식. */
     function loop() {
       if (!drawing) { raf = 0; return; }
-      if (boundEl && analyser && !boundEl.paused && !boundEl.ended) {
-        var level = rms();
-        if (level > 0.03) {
-          silentFrames = 0;
-          if (video.paused) { try { video.play(); } catch (e) {} }
-          try { video.playbackRate = Math.min(3.2, 1.6 + level * 6); } catch (e) {}
-        } else if (++silentFrames > 9) {
-          if (!video.paused) { try { video.pause(); } catch (e) {} }
+      if (boundEl && analyser) {
+        if (boundEl.paused || boundEl.ended) {
+          showTier('closed');                       // 대기/종료 = 다문 입 프레임
+        } else {
+          showTier(tierFor(rms()));                 // 소리 크기에 맞는 입모양으로 즉시 전환
         }
-      } else if (boundEl) {
-        silentFrames = 0;
-        if (!video.paused) { try { video.pause(); } catch (e) {} }   // 대기/종료 = 입 정지
       } else {
-        silentFrames = 0;
+        // 분석 불가한 음성(브라우저 합성 폴백) — 음량을 모르니 루프 재생으로 말하는 느낌만
+        curTier = null;
         if (video.paused) { try { video.playbackRate = 1.6; video.play(); } catch (e) {} }
       }
       keyFrame();
       raf = requestAnimationFrame(loop);
     }
-    function startDraw() { drawing = true; if (!raf) raf = requestAnimationFrame(loop); }
+    function startDraw() { curTier = null; lastSwitchAt = 0; fadeData = null; drawing = true; if (!raf) raf = requestAnimationFrame(loop); }
     function stopDraw() { drawing = false; if (raf) { try { cancelAnimationFrame(raf); } catch (e) {} raf = 0; } }
     function still() { keyFrame(); }
     function setSpeaking(on) {
