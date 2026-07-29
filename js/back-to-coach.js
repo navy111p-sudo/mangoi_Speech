@@ -23,14 +23,20 @@
   var COACH_FALLBACK = "https://webrtc-unified-platform-prod.navy111p.workers.dev/speech-coach.html";
   var TRUSTED = /^https:\/\/([a-z0-9-]+\.)*(mango-i\.com|mangoi\.co\.kr|navy111p\.workers\.dev)$/i;
 
-  /* 들어온 자리 기억 — 망고아이에서 온 경우에만 */
+  /* 들어온 자리 기억 — 망고아이에서 온 경우에만.
+     ⚠️ 다른 도메인으로 이동하면 브라우저가 referrer 를 "도메인까지만" 보낸다
+        (Referrer-Policy: strict-origin-when-cross-origin — 기본값).
+        그래서 경로가 "/" 로만 오는데, 그대로 쓰면 망고아이 '홈'으로 가버린다.
+        사장님 요청은 '측정 직전 화면(발음 연습)'이므로 경로가 없으면 음성코치로 채운다. */
+  var COACH_PATH = "/speech-coach.html";
   (function remember() {
     try {
       var ref = document.referrer || "";
       if (!ref) return;
       var o = new URL(ref);
       if (!TRUSTED.test(o.origin)) return;
-      localStorage.setItem(KEY, ref);
+      var path = (o.pathname && o.pathname !== "/") ? (o.pathname + o.search) : COACH_PATH;
+      localStorage.setItem(KEY, o.origin + path);
     } catch (e) {}
   })();
 
