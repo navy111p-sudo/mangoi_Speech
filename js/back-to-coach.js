@@ -51,9 +51,13 @@
   function goBack(ev) {
     if (ev && ev.preventDefault) ev.preventDefault();
     var u = returnUrl();
-    if (u) { global.location.href = u; return; }
+    /* ⚠️ replace 로 이동한다(href 아님). href 로 가면 방문 기록이 하나 늘어,
+       도착한 음성코치 화면의 ← 가 history.back() 으로 다시 연습앱으로 돌아와
+       두 화면을 왔다갔다 하게 된다. replace 면 기록이 늘지 않아
+       "← 한 번 = 음성코치, 거기서 또 = 홈페이지" 가 성립한다. */
+    if (u) { global.location.replace(u); return; }
     if (global.history && global.history.length > 1) { global.history.back(); return; }
-    global.location.href = COACH_FALLBACK;
+    global.location.replace(COACH_FALLBACK);
   }
   global.mangoiGoBack = goBack;
 
