@@ -55,9 +55,12 @@
        도착한 음성코치 화면의 ← 가 history.back() 으로 다시 연습앱으로 돌아와
        두 화면을 왔다갔다 하게 된다. replace 면 기록이 늘지 않아
        "← 한 번 = 음성코치, 거기서 또 = 홈페이지" 가 성립한다. */
-    if (u) { global.location.replace(u); return; }
+    /* #from-practice 표시를 붙여 보낸다 — 음성코치 화면이 이 표시를 보면 자기 ← 를
+       "홈페이지로" 로 바꾼다. 방문 기록 상태(새 탭이냐 아니냐)에 좌우되지 않게 하려는 것.
+       → 결과: ← 한 번이면 음성코치, 거기서 또 누르면 홈페이지. */
+    if (u) { global.location.replace(u.split("#")[0] + "#from-practice"); return; }
     if (global.history && global.history.length > 1) { global.history.back(); return; }
-    global.location.replace(COACH_FALLBACK);
+    global.location.replace(COACH_FALLBACK + "#from-practice");
   }
   global.mangoiGoBack = goBack;
 
