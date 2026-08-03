@@ -66,17 +66,12 @@
   </style>
 </head>
 <body>
-  <!-- 🏠 홈페이지로 돌아가기 + EN/한 토글 (우측 상단 floating) -->
-  <div id="ms-top-actions" style="position:fixed;top:14px;right:14px;z-index:99999;display:flex;gap:8px;align-items:center;font-family:'Noto Sans KR',sans-serif">
-    <button id="ms-lang-toggle" onclick="msToggleLang()" title="Language"
-            style="background:rgba(20,28,48,0.65);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.18);color:#f1f5ff;padding:7px 13px;border-radius:99px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;box-shadow:0 6px 18px rgba(0,0,0,0.3)">
-      🌐 <span id="ms-lang-label">EN</span>
-    </button>
-    <a href="https://webrtc-unified-platform-prod.navy111p.workers.dev/" title="학생 홈페이지로 돌아가기"
-       style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;text-decoration:none;padding:9px 16px;border-radius:99px;font-size:13px;font-weight:800;display:inline-flex;align-items:center;gap:5px;box-shadow:0 6px 20px -4px rgba(245,158,11,.55)">
-      🏠 <span id="ms-home-label">홈페이지</span>
-    </a>
-  </div>
+  <!-- 🚫 (2026-08-04 사장님 지시) 우측 상단 [🌐 EN] + [🏠 홈페이지] 두 버튼 제거.
+       연습 화면은 말하기에만 집중하도록 상단 버튼을 왼쪽 [←][🏠] 두 개로만 남긴다
+       (back-to-coach.js 가 작게·반투명으로 주입). 아래 언어 토글 스크립트는 그대로
+       두어도 무해하다 — 대상 요소가 없으면 조용히 건너뛰고, msToggleLang() 은
+       다른 화면(결과·기록)에서 여전히 쓰인다.
+       ↳ 되살리려면 이 자리에 #ms-top-actions 블록을 다시 넣으면 된다. -->
   <script>
     // 언어 토글 (헤더/안내문 등 HTML 텍스트만 — Flutter 내부는 자체 i18n)
     (function(){
@@ -455,7 +450,7 @@
   <script src="js/ui-enhancements.js?v=2"></script>
   <!-- ⬅ 뒤로 가기를 들어온 자리(망고아이 발음 연습)로 되돌린다.
        ui-enhancements.js 가 '← 대시보드로 돌아가기' 를 넣으므로 반드시 그 뒤. -->
-  <script src="js/back-to-coach.js?v=6"></script>
+  <script src="js/back-to-coach.js?v=7"></script>
     <!-- 🚫 firebase-session-save.js 제거(2026-07-28) — 이 프로젝트의 Firestore 규칙이
          읽기·쓰기를 모두 막고 있어 저장이 매번 permission-denied 로 실패했다(기록 0건의 원인).
          저장은 mangoi-progress.js 가 담당한다. 규칙이 열리면 다시 붙일 수 있다. -->

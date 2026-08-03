@@ -73,56 +73,52 @@
   function homeLabel() { return isEn() ? "Home" : "홈페이지"; }
 
   document.addEventListener("DOMContentLoaded", function () {
-    /* ① 화면 왼쪽 위 고정 바로가기 — 「← 이전으로」 + 바로 옆 「🏠 홈페이지」
-          (오른쪽 위 홈/EN 묶음과 같은 모양) */
+    /* ① 화면 왼쪽 위 고정 바로가기 — 「←」 + 바로 옆 「🏠」
+          (2026-08-04 사장님 지시) 연습 화면 상단은 이 두 개만 남긴다.
+          우측의 [🌐 EN]·[🏠 홈페이지]는 practice.html 에서 제거했다.
+          · 글자 없이 아이콘만 — 폰에서 문장·마이크 영역을 가리지 않게 작게
+          · 반투명(배경 0.28) — 뒤 배경이 비치도록
+          · gap 으로 사이를 벌려 서로 겹치지 않게 */
     if (!document.getElementById("ms-top-left-actions")) {
-      var PILL =
-        "background:rgba(20,28,48,0.65);backdrop-filter:blur(10px);" +
-        "border:1px solid rgba(255,255,255,0.18);color:#f1f5ff;" +
-        "padding:9px 15px;border-radius:99px;font-size:13px;font-weight:800;" +
-        "cursor:pointer;display:inline-flex;align-items:center;gap:5px;" +
+      var DOT =
+        "width:30px;height:30px;padding:0;" +
+        "background:rgba(15,23,42,0.28);backdrop-filter:blur(6px);" +
+        "-webkit-backdrop-filter:blur(6px);" +
+        "border:1px solid rgba(255,255,255,0.16);color:#e8eefc;" +
+        "border-radius:50%;font-size:14px;font-weight:700;line-height:1;" +
+        "cursor:pointer;display:inline-flex;align-items:center;" +
+        "justify-content:center;flex:0 0 auto;" +
         "text-decoration:none;font-family:'Noto Sans KR',sans-serif;" +
-        "box-shadow:0 6px 18px rgba(0,0,0,0.3)";
+        "box-shadow:0 2px 8px rgba(0,0,0,0.22);" +
+        "-webkit-tap-highlight-color:transparent";
 
       var wrap = document.createElement("div");
       wrap.id = "ms-top-left-actions";
       wrap.style.cssText =
-        "position:fixed;top:14px;left:14px;z-index:99999;" +
+        "position:fixed;top:10px;left:10px;z-index:99999;" +
         "display:flex;gap:8px;align-items:center";
 
       var b = document.createElement("button");
       b.id = "ms-back-btn";
       b.type = "button";
       b.title = "바로 전 화면(발음 연습)으로";
-      b.innerHTML = '← <span id="ms-back-label">' + label() + "</span>";
-      b.style.cssText = PILL;
+      b.setAttribute("aria-label", label());   /* 글자를 뺐으므로 읽어주기용 이름은 남긴다 */
+      b.textContent = "←";
+      b.style.cssText = DOT;
       b.addEventListener("click", goBack);
       wrap.appendChild(b);
 
-      /* 🏠 학생 홈페이지 — 오른쪽 위 홈 버튼과 같은 곳으로 (사장님 지시 2026-07-28) */
+      /* 🏠 학생 홈페이지 (사장님 지시 2026-07-28) */
       var h = document.createElement("a");
       h.id = "ms-home-btn-left";
       h.href = HOME_URL;
       h.title = "학생 홈페이지로";
-      h.innerHTML = '🏠 <span id="ms-home-label-left">' + homeLabel() + "</span>";
-      h.style.cssText = PILL;
+      h.setAttribute("aria-label", homeLabel());
+      h.textContent = "🏠";
+      h.style.cssText = DOT;
       wrap.appendChild(h);
 
       document.body.appendChild(wrap);
-
-      /* 좁은 화면에서는 글자를 빼고 아이콘만 — 오른쪽 위 홈/EN 묶음과 겹치는 것 방지.
-         (데스크톱 1280px 에서는 좌 221px / 우 1076px 로 여유가 크지만, 폰 폭에서는 부딪힌다) */
-      if (!document.getElementById("ms-topleft-style")) {
-        var st = document.createElement("style");
-        st.id = "ms-topleft-style";
-        st.textContent =
-          "@media(max-width:600px){" +
-          "#ms-top-left-actions{gap:6px}" +
-          "#ms-back-label,#ms-home-label-left{display:none}" +
-          "#ms-back-btn,#ms-home-btn-left{padding:9px 12px;font-size:15px}" +
-          "}";
-        document.head.appendChild(st);
-      }
     }
 
     /* ② 기존 '← 대시보드로 돌아가기' 링크도 같은 곳으로.
